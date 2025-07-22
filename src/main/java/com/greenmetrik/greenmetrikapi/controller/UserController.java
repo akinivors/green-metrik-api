@@ -1,0 +1,26 @@
+package com.greenmetrik.greenmetrikapi.controller;
+
+import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
+import com.greenmetrik.greenmetrikapi.dto.UserResponse;
+import com.greenmetrik.greenmetrikapi.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse registerUser(@RequestBody UserRegistrationRequest request) {
+        return userService.registerUser(request);
+    }
+}
