@@ -12,6 +12,8 @@ import com.greenmetrik.greenmetrikapi.repository.ElectricityConsumptionRepositor
 import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WaterConsumptionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -64,15 +66,13 @@ public class ConsumptionService {
         waterRepository.save(consumption);
     }
 
-    public List<ElectricityConsumptionResponse> getAllElectricityConsumption() {
-        return electricityRepository.findAll().stream()
-                .map(ElectricityConsumptionResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(Pageable pageable) {
+        Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(pageable);
+        return consumptionPage.map(ElectricityConsumptionResponse::fromEntity);
     }
 
-    public List<WaterConsumptionResponse> getAllWaterConsumption() {
-        return waterRepository.findAll().stream()
-                .map(WaterConsumptionResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<WaterConsumptionResponse> getAllWaterConsumption(Pageable pageable) {
+        Page<WaterConsumption> consumptionPage = waterRepository.findAll(pageable);
+        return consumptionPage.map(WaterConsumptionResponse::fromEntity);
     }
 }

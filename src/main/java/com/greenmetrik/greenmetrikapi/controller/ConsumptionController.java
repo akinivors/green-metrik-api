@@ -5,12 +5,13 @@ import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.service.ConsumptionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/consumption")
@@ -38,13 +39,13 @@ public class ConsumptionController {
 
     @GetMapping("/electricity")
     @PreAuthorize("isAuthenticated()")
-    public List<ElectricityConsumptionResponse> getAllElectricityConsumption() {
-        return consumptionService.getAllElectricityConsumption();
+    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(Pageable pageable) {
+        return consumptionService.getAllElectricityConsumption(pageable);
     }
 
     @GetMapping("/water")
     @PreAuthorize("isAuthenticated()")
-    public List<WaterConsumptionResponse> getAllWaterConsumption() {
-        return consumptionService.getAllWaterConsumption();
+    public Page<WaterConsumptionResponse> getAllWaterConsumption(Pageable pageable) {
+        return consumptionService.getAllWaterConsumption(pageable);
     }
 }

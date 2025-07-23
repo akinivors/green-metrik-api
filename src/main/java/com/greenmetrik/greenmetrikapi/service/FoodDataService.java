@@ -6,6 +6,8 @@ import com.greenmetrik.greenmetrikapi.model.FoodData;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.repository.FoodDataRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,9 +38,8 @@ public class FoodDataService {
         foodDataRepository.save(foodData);
     }
 
-    public List<FoodDataResponse> getAllFoodData() {
-        return foodDataRepository.findAll().stream()
-                .map(FoodDataResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<FoodDataResponse> getAllFoodData(Pageable pageable) {
+        Page<FoodData> dataPage = foodDataRepository.findAll(pageable);
+        return dataPage.map(FoodDataResponse::fromEntity);
     }
 }

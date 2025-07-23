@@ -6,6 +6,8 @@ import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.model.VehicleEntry;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.VehicleEntryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,9 +37,8 @@ public class VehicleService {
         vehicleEntryRepository.save(vehicleEntry);
     }
 
-    public List<VehicleEntryResponse> getAllVehicleEntries() {
-        return vehicleEntryRepository.findAll().stream()
-                .map(VehicleEntryResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable) {
+        Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(pageable);
+        return entryPage.map(VehicleEntryResponse::fromEntity);
     }
 }
