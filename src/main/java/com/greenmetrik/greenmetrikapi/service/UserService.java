@@ -1,5 +1,6 @@
 package com.greenmetrik.greenmetrikapi.service;
 
+import com.greenmetrik.greenmetrikapi.dto.ChangePasswordRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserResponse;
 import com.greenmetrik.greenmetrikapi.model.Role;
@@ -9,6 +10,9 @@ import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -41,5 +45,31 @@ public class UserService {
 
         User savedUser = userRepository.save(newUser);
         return UserResponse.fromEntity(savedUser);
+    }
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. Check if the old password is correct
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid old password");
+        }
+
+        // 2. Encode and set the new password
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+
+        // 3. Update the temporary password flag
+        user.setTemporaryPassword(false);
+
+        // 4. Save the updated user
+        userRepository.save(user);
     }
 }
