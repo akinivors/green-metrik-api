@@ -39,4 +39,10 @@ public class UserController {
     public void changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
         userService.changePassword(principal.getName(), request);
     }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public UserResponse getMyProfile(Principal principal) {
+        return userService.getMyProfile(principal.getName());
+    }
 }

@@ -72,4 +72,10 @@ public class UserService {
         // 4. Save the updated user
         userRepository.save(user);
     }
+
+    public UserResponse getMyProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return UserResponse.fromEntity(user);
+    }
 }
