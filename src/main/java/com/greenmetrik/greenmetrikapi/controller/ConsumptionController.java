@@ -39,7 +39,7 @@ public class ConsumptionController {
     }
 
     @GetMapping("/electricity")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
     public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
             Pageable pageable,
             @RequestParam(required = false) Long unitId,
@@ -50,7 +50,7 @@ public class ConsumptionController {
     }
 
     @GetMapping("/water")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
     public Page<WaterConsumptionResponse> getAllWaterConsumption(
             Pageable pageable,
             @RequestParam(required = false) Long unitId,

@@ -30,7 +30,7 @@ public class VehicleController {
     }
 
     @GetMapping("/vehicle")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GUVENLIK')")
     public Page<VehicleEntryResponse> getAllVehicleEntries(
             Pageable pageable,
             @RequestParam(required = false) LocalDate startDate,

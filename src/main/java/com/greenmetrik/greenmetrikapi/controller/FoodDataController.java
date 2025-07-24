@@ -30,7 +30,7 @@ public class FoodDataController {
     }
 
     @GetMapping("/food")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
     public Page<FoodDataResponse> getAllFoodData(
             Pageable pageable,
             @RequestParam(required = false) LocalDate startDate,
