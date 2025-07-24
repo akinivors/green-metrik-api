@@ -3,6 +3,7 @@ package com.greenmetrik.greenmetrikapi.service;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
+import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.model.ElectricityConsumption;
 import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
@@ -12,6 +13,7 @@ import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WaterConsumptionRepository;
 import com.greenmetrik.greenmetrikapi.specifications.ElectricityConsumptionSpecification;
+import com.greenmetrik.greenmetrikapi.specifications.WaterConsumptionSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -76,5 +78,17 @@ public class ConsumptionService {
 
         Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(spec, pageable);
         return consumptionPage.map(ElectricityConsumptionResponse::fromEntity);
+    }
+
+    public Page<WaterConsumptionResponse> getAllWaterConsumption(
+            Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
+
+        Specification<WaterConsumption> spec = Specification
+                .where(WaterConsumptionSpecification.hasUnitId(unitId))
+                .and(WaterConsumptionSpecification.hasPeriodStartDateAfter(startDate))
+                .and(WaterConsumptionSpecification.hasPeriodEndDateBefore(endDate));
+
+        Page<WaterConsumption> consumptionPage = waterRepository.findAll(spec, pageable);
+        return consumptionPage.map(WaterConsumptionResponse::fromEntity);
     }
 }
