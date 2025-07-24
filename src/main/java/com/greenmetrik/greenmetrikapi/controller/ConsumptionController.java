@@ -3,7 +3,6 @@ package com.greenmetrik.greenmetrikapi.controller;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
-import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.service.ConsumptionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/consumption")
@@ -39,13 +39,12 @@ public class ConsumptionController {
 
     @GetMapping("/electricity")
     @PreAuthorize("isAuthenticated()")
-    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(Pageable pageable) {
-        return consumptionService.getAllElectricityConsumption(pageable);
-    }
+    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
+            Pageable pageable,
+            @RequestParam(required = false) Long unitId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
 
-    @GetMapping("/water")
-    @PreAuthorize("isAuthenticated()")
-    public Page<WaterConsumptionResponse> getAllWaterConsumption(Pageable pageable) {
-        return consumptionService.getAllWaterConsumption(pageable);
+        return consumptionService.getAllElectricityConsumption(pageable, unitId, startDate, endDate);
     }
 }

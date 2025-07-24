@@ -3,7 +3,6 @@ package com.greenmetrik.greenmetrikapi.service;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
-import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.model.ElectricityConsumption;
 import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
@@ -12,12 +11,13 @@ import com.greenmetrik.greenmetrikapi.repository.ElectricityConsumptionRepositor
 import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WaterConsumptionRepository;
+import com.greenmetrik.greenmetrikapi.specifications.ElectricityConsumptionSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @Service
 public class ConsumptionService {
@@ -66,13 +66,15 @@ public class ConsumptionService {
         waterRepository.save(consumption);
     }
 
-    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(Pageable pageable) {
-        Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(pageable);
-        return consumptionPage.map(ElectricityConsumptionResponse::fromEntity);
-    }
+    public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
+            Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
 
-    public Page<WaterConsumptionResponse> getAllWaterConsumption(Pageable pageable) {
-        Page<WaterConsumption> consumptionPage = waterRepository.findAll(pageable);
-        return consumptionPage.map(WaterConsumptionResponse::fromEntity);
+        Specification<ElectricityConsumption> spec = Specification
+                .where(ElectricityConsumptionSpecification.hasUnitId(unitId))
+                .and(ElectricityConsumptionSpecification.hasPeriodStartDateAfter(startDate))
+                .and(ElectricityConsumptionSpecification.hasPeriodEndDateBefore(endDate));
+
+        Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(spec, pageable);
+        return consumptionPage.map(ElectricityConsumptionResponse::fromEntity);
     }
 }
