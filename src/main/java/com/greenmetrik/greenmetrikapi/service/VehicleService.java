@@ -6,12 +6,13 @@ import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.model.VehicleEntry;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.VehicleEntryRepository;
+import com.greenmetrik.greenmetrikapi.specifications.VehicleEntrySpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @Service
 public class VehicleService {
@@ -37,8 +38,12 @@ public class VehicleService {
         vehicleEntryRepository.save(vehicleEntry);
     }
 
-    public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable) {
-        Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(pageable);
+    public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        Specification<VehicleEntry> spec = Specification
+                .where(VehicleEntrySpecification.hasEntryDateAfter(startDate))
+                .and(VehicleEntrySpecification.hasEntryDateBefore(endDate));
+
+        Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(spec, pageable);
         return entryPage.map(VehicleEntryResponse::fromEntity);
     }
 }

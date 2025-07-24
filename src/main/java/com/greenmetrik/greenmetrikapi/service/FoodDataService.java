@@ -6,12 +6,13 @@ import com.greenmetrik.greenmetrikapi.model.FoodData;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.repository.FoodDataRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
+import com.greenmetrik.greenmetrikapi.specifications.FoodDataSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @Service
 public class FoodDataService {
@@ -38,8 +39,12 @@ public class FoodDataService {
         foodDataRepository.save(foodData);
     }
 
-    public Page<FoodDataResponse> getAllFoodData(Pageable pageable) {
-        Page<FoodData> dataPage = foodDataRepository.findAll(pageable);
+    public Page<FoodDataResponse> getAllFoodData(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        Specification<FoodData> spec = Specification
+                .where(FoodDataSpecification.hasDataDateAfter(startDate))
+                .and(FoodDataSpecification.hasDataDateBefore(endDate));
+
+        Page<FoodData> dataPage = foodDataRepository.findAll(spec, pageable);
         return dataPage.map(FoodDataResponse::fromEntity);
     }
 }

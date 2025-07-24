@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/entries")
@@ -30,7 +31,10 @@ public class FoodDataController {
 
     @GetMapping("/food")
     @PreAuthorize("isAuthenticated()")
-    public Page<FoodDataResponse> getAllFoodData(Pageable pageable) {
-        return foodDataService.getAllFoodData(pageable);
+    public Page<FoodDataResponse> getAllFoodData(
+            Pageable pageable,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        return foodDataService.getAllFoodData(pageable, startDate, endDate);
     }
 }

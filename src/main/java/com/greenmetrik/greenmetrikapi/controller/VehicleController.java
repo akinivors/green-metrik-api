@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/entries")
@@ -30,7 +31,10 @@ public class VehicleController {
 
     @GetMapping("/vehicle")
     @PreAuthorize("isAuthenticated()")
-    public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable) {
-        return vehicleService.getAllVehicleEntries(pageable);
+    public Page<VehicleEntryResponse> getAllVehicleEntries(
+            Pageable pageable,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        return vehicleService.getAllVehicleEntries(pageable, startDate, endDate);
     }
 }
