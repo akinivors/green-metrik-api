@@ -7,7 +7,8 @@ public record UserResponse(
     String username,
     String fullName,
     String role,
-    Long unitId
+    Long unitId,
+    boolean isTemporaryPassword
 ) {
     public static UserResponse fromEntity(User user) {
         return new UserResponse(
@@ -15,7 +16,8 @@ public record UserResponse(
             user.getUsername(),
             user.getFullName(),
             user.getRole().name(),
-            user.getUnit().getId()
+            user.getUnit().getId(),
+            user.isTemporaryPassword()
         );
     }
 }
