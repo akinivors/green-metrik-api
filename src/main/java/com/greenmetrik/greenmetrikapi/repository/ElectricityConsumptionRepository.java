@@ -16,6 +16,6 @@ public interface ElectricityConsumptionRepository extends JpaRepository<Electric
     @Query("SELECT SUM(e.consumptionKwh) FROM ElectricityConsumption e WHERE e.periodEndDate >= :startDate AND e.periodEndDate <= :endDate")
     Double findTotalConsumptionBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyConsumptionGraphPoint(TO_CHAR(DATE_TRUNC('month', e.periodEndDate), 'YYYY-MM'), SUM(e.consumptionKwh), 0.0) FROM ElectricityConsumption e WHERE e.periodEndDate >= :startDate AND e.periodEndDate <= :endDate GROUP BY DATE_TRUNC('month', e.periodEndDate) ORDER BY DATE_TRUNC('month', e.periodEndDate)")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyConsumptionGraphPoint(TO_CHAR(DATE_TRUNC('month', e.periodEndDate), 'YYYY-MM'), SUM(e.consumptionKwh), 0.0) FROM ElectricityConsumption e WHERE e.periodEndDate >= :startDate AND e.periodEndDate <= :endDate GROUP BY DATE_TRUNC('month', e.periodEndDate) ORDER BY DATE_TRUNC('month', e.periodEndDate) ASC")
     List<PublicStatsDTO.MonthlyConsumptionGraphPoint> findMonthlyConsumptionBetweenDates(LocalDate startDate, LocalDate endDate);
 }

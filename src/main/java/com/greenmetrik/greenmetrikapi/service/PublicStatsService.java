@@ -67,7 +67,8 @@ public class PublicStatsService {
                     p -> p,
                     (p1, p2) -> new PublicStatsDTO.MonthlyConsumptionGraphPoint(p1.month(),
                         (p1.electricityKwh() != null ? p1.electricityKwh() : 0.0) + (p2.electricityKwh() != null ? p2.electricityKwh() : 0.0),
-                        (p1.waterTon() != null ? p1.waterTon() : 0.0) + (p2.waterTon() != null ? p2.waterTon() : 0.0))
+                        (p1.waterTon() != null ? p1.waterTon() : 0.0) + (p2.waterTon() != null ? p2.waterTon() : 0.0)),
+                    java.util.LinkedHashMap::new
                 ));
             graphData = new ArrayList<>(mergedMap.values());
         }

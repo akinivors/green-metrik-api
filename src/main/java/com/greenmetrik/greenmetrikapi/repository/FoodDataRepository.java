@@ -17,9 +17,9 @@ public interface FoodDataRepository extends JpaRepository<FoodData, Long>, JpaSp
     @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$FoodSummary(SUM(f.productionKg), SUM(f.consumptionKg), SUM(f.wasteOilLt)) FROM FoodData f WHERE f.dataDate >= :startDate AND f.dataDate <= :endDate")
     PublicStatsDTO.FoodSummary findSummaryBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$DailyFoodGraphPoint(f.dataDate, SUM(f.productionKg), SUM(f.consumptionKg), SUM(f.wasteOilLt)) FROM FoodData f WHERE f.dataDate >= :startDate AND f.dataDate <= :endDate GROUP BY f.dataDate ORDER BY f.dataDate")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$DailyFoodGraphPoint(f.dataDate, SUM(f.productionKg), SUM(f.consumptionKg), SUM(f.wasteOilLt)) FROM FoodData f WHERE f.dataDate >= :startDate AND f.dataDate <= :endDate GROUP BY f.dataDate ORDER BY f.dataDate ASC")
     List<PublicStatsDTO.DailyFoodGraphPoint> findDailyStatsBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyFoodGraphPoint(TO_CHAR(f.dataDate, 'YYYY-MM'), SUM(f.productionKg), SUM(f.consumptionKg), SUM(f.wasteOilLt)) FROM FoodData f WHERE f.dataDate >= :startDate AND f.dataDate <= :endDate GROUP BY TO_CHAR(f.dataDate, 'YYYY-MM') ORDER BY TO_CHAR(f.dataDate, 'YYYY-MM')")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyFoodGraphPoint(TO_CHAR(f.dataDate, 'YYYY-MM'), SUM(f.productionKg), SUM(f.consumptionKg), SUM(f.wasteOilLt)) FROM FoodData f WHERE f.dataDate >= :startDate AND f.dataDate <= :endDate GROUP BY TO_CHAR(f.dataDate, 'YYYY-MM') ORDER BY TO_CHAR(f.dataDate, 'YYYY-MM') ASC")
     List<PublicStatsDTO.MonthlyFoodGraphPoint> findMonthlyStatsBetweenDates(LocalDate startDate, LocalDate endDate);
 }

@@ -17,6 +17,6 @@ public interface WaterConsumptionRepository extends JpaRepository<WaterConsumpti
     @Query("SELECT SUM(w.consumptionTon) FROM WaterConsumption w WHERE w.periodEndDate >= :startDate AND w.periodEndDate <= :endDate")
     Double findTotalConsumptionBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyConsumptionGraphPoint(TO_CHAR(DATE_TRUNC('month', w.periodEndDate), 'YYYY-MM'), 0.0, SUM(w.consumptionTon)) FROM WaterConsumption w WHERE w.periodEndDate >= :startDate AND w.periodEndDate <= :endDate GROUP BY DATE_TRUNC('month', w.periodEndDate) ORDER BY DATE_TRUNC('month', w.periodEndDate)")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyConsumptionGraphPoint(TO_CHAR(DATE_TRUNC('month', w.periodEndDate), 'YYYY-MM'), 0.0, SUM(w.consumptionTon)) FROM WaterConsumption w WHERE w.periodEndDate >= :startDate AND w.periodEndDate <= :endDate GROUP BY DATE_TRUNC('month', w.periodEndDate) ORDER BY DATE_TRUNC('month', w.periodEndDate) ASC")
     List<PublicStatsDTO.MonthlyConsumptionGraphPoint> findMonthlyConsumptionBetweenDates(LocalDate startDate, LocalDate endDate);
 }

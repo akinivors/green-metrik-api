@@ -31,6 +31,7 @@ public class UserService {
         if (userRepository.findByUsername(request.username()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
+        validatePassword(request.password()); // Add password validation
 
         Unit unit = unitRepository.findById(request.unitId())
                 .orElseThrow(() -> new RuntimeException("Unit not found"));
@@ -63,6 +64,8 @@ public class UserService {
             throw new RuntimeException("Invalid old password");
         }
 
+        validatePassword(request.newPassword()); // Add password validation
+
         // 2. Encode and set the new password
         user.setPassword(passwordEncoder.encode(request.newPassword()));
 
@@ -77,5 +80,12 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return UserResponse.fromEntity(user);
+    }
+
+    // Add this private helper method for password validation
+    private void validatePassword(String password) {
+        if (password == null || password.length() < 8) {
+            throw new RuntimeException("Password must be at least 8 characters long.");
+        }
     }
 }

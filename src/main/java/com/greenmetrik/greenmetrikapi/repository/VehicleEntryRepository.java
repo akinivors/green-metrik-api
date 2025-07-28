@@ -16,9 +16,9 @@ public interface VehicleEntryRepository extends JpaRepository<VehicleEntry, Long
     @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$VehicleSummary(SUM(v.publicTransportCount), SUM(v.privateVehicleCount)) FROM VehicleEntry v WHERE v.entryDate >= :startDate AND v.entryDate <= :endDate")
     PublicStatsDTO.VehicleSummary findSummaryBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$DailyVehicleGraphPoint(v.entryDate, SUM(v.publicTransportCount), SUM(v.privateVehicleCount)) FROM VehicleEntry v WHERE v.entryDate >= :startDate AND v.entryDate <= :endDate GROUP BY v.entryDate ORDER BY v.entryDate")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$DailyVehicleGraphPoint(v.entryDate, SUM(v.publicTransportCount), SUM(v.privateVehicleCount)) FROM VehicleEntry v WHERE v.entryDate >= :startDate AND v.entryDate <= :endDate GROUP BY v.entryDate ORDER BY v.entryDate ASC")
     List<PublicStatsDTO.DailyVehicleGraphPoint> findDailyStatsBetweenDates(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyVehicleGraphPoint(TO_CHAR(v.entryDate, 'YYYY-MM'), SUM(v.publicTransportCount), SUM(v.privateVehicleCount)) FROM VehicleEntry v WHERE v.entryDate >= :startDate AND v.entryDate <= :endDate GROUP BY TO_CHAR(v.entryDate, 'YYYY-MM') ORDER BY TO_CHAR(v.entryDate, 'YYYY-MM')")
+    @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyVehicleGraphPoint(TO_CHAR(v.entryDate, 'YYYY-MM'), SUM(v.publicTransportCount), SUM(v.privateVehicleCount)) FROM VehicleEntry v WHERE v.entryDate >= :startDate AND v.entryDate <= :endDate GROUP BY TO_CHAR(v.entryDate, 'YYYY-MM') ORDER BY TO_CHAR(v.entryDate, 'YYYY-MM') ASC")
     List<PublicStatsDTO.MonthlyVehicleGraphPoint> findMonthlyStatsBetweenDates(LocalDate startDate, LocalDate endDate);
 }
