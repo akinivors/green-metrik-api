@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class CampusMetricsService {
 
@@ -25,17 +27,23 @@ public class CampusMetricsService {
         metric.setMetricKey(request.metricKey());
         metric.setMetricValue(request.metricValue());
         metric.setCategory(MetricCategory.valueOf(request.category().toUpperCase()));
-        metric.setYear(request.year());
+        metric.setMetricDate(request.metricDate());
         metric.setDescription(request.description());
 
         CampusMetrics savedMetric = campusMetricsRepository.save(metric);
         return CampusMetricsResponse.fromEntity(savedMetric);
     }
 
-    public Page<CampusMetricsResponse> getAllMetrics(Pageable pageable, MetricCategory category, Integer year) {
+    public Page<CampusMetricsResponse> getAllMetrics(
+            Pageable pageable,
+            MetricCategory category,
+            LocalDate startDate,
+            LocalDate endDate) {
+
         Specification<CampusMetrics> spec = Specification
                 .where(CampusMetricsSpecification.hasCategory(category))
-                .and(CampusMetricsSpecification.hasYear(year));
+                .and(CampusMetricsSpecification.hasMetricDateAfter(startDate))
+                .and(CampusMetricsSpecification.hasMetricDateBefore(endDate));
 
         Page<CampusMetrics> metricsPage = campusMetricsRepository.findAll(spec, pageable);
         return metricsPage.map(CampusMetricsResponse::fromEntity);

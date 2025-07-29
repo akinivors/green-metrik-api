@@ -2,6 +2,7 @@ package com.greenmetrik.greenmetrikapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -22,8 +23,8 @@ public class CampusMetrics {
     @Column(nullable = false)
     private MetricCategory category;
 
-    @Column(nullable = false)
-    private Integer year;
+    @Column(name = "metric_date", nullable = false)
+    private LocalDate metricDate;
 
     @Column
     private String description;

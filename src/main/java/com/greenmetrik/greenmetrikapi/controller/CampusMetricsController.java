@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/metrics")
 public class CampusMetricsController {
@@ -32,7 +34,8 @@ public class CampusMetricsController {
     public Page<CampusMetricsResponse> getAllMetrics(
             Pageable pageable,
             @RequestParam(required = false) MetricCategory category,
-            @RequestParam(required = false) Integer year) {
-        return campusMetricsService.getAllMetrics(pageable, category, year);
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        return campusMetricsService.getAllMetrics(pageable, category, startDate, endDate);
     }
 }

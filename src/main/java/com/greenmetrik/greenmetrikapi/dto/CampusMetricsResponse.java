@@ -2,13 +2,14 @@ package com.greenmetrik.greenmetrikapi.dto;
 
 import com.greenmetrik.greenmetrikapi.model.CampusMetrics;
 import com.greenmetrik.greenmetrikapi.model.MetricCategory;
+import java.time.LocalDate;
 
 public record CampusMetricsResponse(
     Long id,
     String metricKey,
     String metricValue,
     MetricCategory category,
-    Integer year,
+    LocalDate metricDate,
     String description
 ) {
     public static CampusMetricsResponse fromEntity(CampusMetrics entity) {
@@ -17,7 +18,7 @@ public record CampusMetricsResponse(
             entity.getMetricKey(),
             entity.getMetricValue(),
             entity.getCategory(),
-            entity.getYear(),
+            entity.getMetricDate(),
             entity.getDescription()
         );
     }
