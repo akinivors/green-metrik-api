@@ -5,5 +5,6 @@ import java.time.LocalDate;
 public record VehicleEntryRequest(
     LocalDate entryDate,
     int publicTransportCount,
-    int privateVehicleCount
+    int privateVehicleCount,
+    int zevCount
 ) {}

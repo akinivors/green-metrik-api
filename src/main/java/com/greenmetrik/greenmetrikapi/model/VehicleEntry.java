@@ -18,6 +18,7 @@ public class VehicleEntry {
 
     private int publicTransportCount;
     private int privateVehicleCount;
+    private int zevCount; // New column
 
     // The user who submitted this data.
     @ManyToOne

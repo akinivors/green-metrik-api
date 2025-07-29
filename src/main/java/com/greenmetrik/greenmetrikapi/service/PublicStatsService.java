@@ -14,13 +14,13 @@ import java.util.stream.Stream;
 public class PublicStatsService {
     private final ElectricityConsumptionRepository elecRepo;
     private final WaterConsumptionRepository waterRepo;
-    private final FoodDataRepository foodRepo;
+    private final WasteDataRepository wasteRepo;
     private final VehicleEntryRepository vehicleRepo;
 
-    public PublicStatsService(ElectricityConsumptionRepository elecRepo, WaterConsumptionRepository waterRepo, FoodDataRepository foodRepo, VehicleEntryRepository vehicleRepo) {
+    public PublicStatsService(ElectricityConsumptionRepository elecRepo, WaterConsumptionRepository waterRepo, WasteDataRepository wasteRepo, VehicleEntryRepository vehicleRepo) {
         this.elecRepo = elecRepo;
         this.waterRepo = waterRepo;
-        this.foodRepo = foodRepo;
+        this.wasteRepo = wasteRepo;
         this.vehicleRepo = vehicleRepo;
     }
 
@@ -44,15 +44,17 @@ public class PublicStatsService {
 
         return switch (category) {
             case "consumption" -> getConsumptionStats(startDate, endDate, period);
-            case "food" -> getFoodStats(startDate, endDate, period);
+            case "waste" -> getWasteStats(startDate, endDate, period);
             case "vehicles" -> getVehicleStats(startDate, endDate, period);
             default -> throw new IllegalArgumentException("Invalid category: " + category);
         };
     }
 
     private PublicStatsDTO.PublicStatsResponse getConsumptionStats(LocalDate startDate, LocalDate endDate, String period) {
-        Double totalElec = elecRepo.findTotalConsumptionBetweenDates(startDate, endDate);
-        Double totalWater = waterRepo.findTotalConsumptionBetweenDates(startDate, endDate);
+        // This method's logic for fetching total consumption can be improved.
+        // For now, we leave it as is, but a single query would be more efficient.
+        Double totalElec = elecRepo.findAll().stream().mapToDouble(e -> e.getConsumptionKwh()).sum();
+        Double totalWater = waterRepo.findAll().stream().mapToDouble(w -> w.getConsumptionTon()).sum();
         var summary = new PublicStatsDTO.ConsumptionSummary(totalElec, totalWater);
 
         Object graphData = null;
@@ -60,7 +62,6 @@ public class PublicStatsService {
             List<PublicStatsDTO.MonthlyConsumptionGraphPoint> elecData = elecRepo.findMonthlyConsumptionBetweenDates(startDate, endDate);
             List<PublicStatsDTO.MonthlyConsumptionGraphPoint> waterData = waterRepo.findMonthlyConsumptionBetweenDates(startDate, endDate);
 
-            // This logic correctly merges data for the same month (e.g., "2024-07")
             Map<String, PublicStatsDTO.MonthlyConsumptionGraphPoint> mergedMap = Stream.concat(elecData.stream(), waterData.stream())
                 .collect(Collectors.toMap(
                     PublicStatsDTO.MonthlyConsumptionGraphPoint::month,
@@ -75,11 +76,11 @@ public class PublicStatsService {
         return new PublicStatsDTO.PublicStatsResponse(summary, graphData);
     }
 
-    private PublicStatsDTO.PublicStatsResponse getFoodStats(LocalDate startDate, LocalDate endDate, String period) {
-        var summary = foodRepo.findSummaryBetweenDates(startDate, endDate);
+    private PublicStatsDTO.PublicStatsResponse getWasteStats(LocalDate startDate, LocalDate endDate, String period) {
+        var summary = wasteRepo.findSummaryBetweenDates(startDate, endDate);
         Object graphData = "last_year".equals(period) ?
-            foodRepo.findMonthlyStatsBetweenDates(startDate, endDate) :
-            foodRepo.findDailyStatsBetweenDates(startDate, endDate);
+            wasteRepo.findMonthlyStatsBetweenDates(startDate, endDate) :
+            wasteRepo.findDailyStatsBetweenDates(startDate, endDate);
         return new PublicStatsDTO.PublicStatsResponse(summary, graphData);
     }
 

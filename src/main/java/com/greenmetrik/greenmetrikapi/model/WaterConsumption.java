@@ -19,6 +19,10 @@ public class WaterConsumption {
 
     private double consumptionTon;
 
+    // New columns
+    private double recycledWaterUsageLiters;
+    private double treatedWaterConsumptionLiters;
+
     // The building (unit) this data belongs to.
     @ManyToOne
     @JoinColumn(name = "unit_id")

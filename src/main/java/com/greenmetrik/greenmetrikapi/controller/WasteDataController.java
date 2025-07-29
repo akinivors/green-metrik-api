@@ -1,8 +1,8 @@
 package com.greenmetrik.greenmetrikapi.controller;
 
-import com.greenmetrik.greenmetrikapi.dto.FoodDataRequest;
-import com.greenmetrik.greenmetrikapi.dto.FoodDataResponse;
-import com.greenmetrik.greenmetrikapi.service.FoodDataService;
+import com.greenmetrik.greenmetrikapi.dto.WasteDataRequest;
+import com.greenmetrik.greenmetrikapi.dto.WasteDataResponse;
+import com.greenmetrik.greenmetrikapi.service.WasteDataService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,27 +14,27 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/entries")
-public class FoodDataController {
+public class WasteDataController {
 
-    private final FoodDataService foodDataService;
+    private final WasteDataService wasteDataService;
 
-    public FoodDataController(FoodDataService foodDataService) {
-        this.foodDataService = foodDataService;
+    public WasteDataController(WasteDataService wasteDataService) {
+        this.wasteDataService = wasteDataService;
     }
 
-    @PostMapping("/food")
+    @PostMapping("/waste")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
-    public void addFoodData(@RequestBody FoodDataRequest request, Principal principal) {
-        foodDataService.addFoodData(request, principal.getName());
+    public void addWasteData(@RequestBody WasteDataRequest request, Principal principal) {
+        wasteDataService.addWasteData(request, principal.getName());
     }
 
-    @GetMapping("/food")
+    @GetMapping("/waste")
     @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
-    public Page<FoodDataResponse> getAllFoodData(
+    public Page<WasteDataResponse> getAllWasteData(
             Pageable pageable,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate) {
-        return foodDataService.getAllFoodData(pageable, startDate, endDate);
+        return wasteDataService.getAllWasteData(pageable, startDate, endDate);
     }
 }

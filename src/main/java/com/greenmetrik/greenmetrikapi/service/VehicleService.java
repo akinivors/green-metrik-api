@@ -33,6 +33,7 @@ public class VehicleService {
         vehicleEntry.setEntryDate(request.entryDate());
         vehicleEntry.setPublicTransportCount(request.publicTransportCount());
         vehicleEntry.setPrivateVehicleCount(request.privateVehicleCount());
+        vehicleEntry.setZevCount(request.zevCount());
         vehicleEntry.setUser(user);
 
         vehicleEntryRepository.save(vehicleEntry);

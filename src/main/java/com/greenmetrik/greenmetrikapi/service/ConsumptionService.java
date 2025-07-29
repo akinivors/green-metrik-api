@@ -62,6 +62,8 @@ public class ConsumptionService {
         consumption.setPeriodStartDate(request.periodStartDate());
         consumption.setPeriodEndDate(request.periodEndDate());
         consumption.setConsumptionTon(request.consumptionTon());
+        consumption.setRecycledWaterUsageLiters(request.recycledWaterUsageLiters());
+        consumption.setTreatedWaterConsumptionLiters(request.treatedWaterConsumptionLiters());
         consumption.setUnit(unit);
         consumption.setUser(user);
 

@@ -6,5 +6,7 @@ public record WaterConsumptionRequest(
     LocalDate periodStartDate,
     LocalDate periodEndDate,
     double consumptionTon,
+    double recycledWaterUsageLiters,
+    double treatedWaterConsumptionLiters,
     Long unitId
 ) {}
