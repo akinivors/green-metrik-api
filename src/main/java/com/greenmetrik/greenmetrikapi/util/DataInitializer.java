@@ -68,6 +68,8 @@ public class DataInitializer implements CommandLineRunner {
         admin.setTemporaryPassword(false);
         userRepository.save(admin);
 
+
+
         // 3. Create a sample metric for every key defined in MetricKeys.java
         createAllSampleMetrics();
 
