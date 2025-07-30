@@ -37,10 +37,26 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.deleteAllInBatch();
         unitRepository.deleteAllInBatch();
 
-        // 1. Create default Units
-        Unit adminUnit = new Unit();
-        adminUnit.setName("Admin Unit");
-        unitRepository.save(adminUnit);
+        // 1. Create the focused list of operational units
+        Unit genelSekreterlik = new Unit();
+        genelSekreterlik.setName("Genel Sekreterlik");
+
+        Unit muhendislikFakultesi = new Unit();
+        muhendislikFakultesi.setName("Mühendislik Fakültesi");
+
+        Unit fenFakultesi = new Unit();
+        fenFakultesi.setName("Fen Fakültesi");
+
+        Unit mimarlikFakultesi = new Unit();
+        mimarlikFakultesi.setName("Mimarlık Fakültesi");
+
+        Unit yemekhane = new Unit();
+        yemekhane.setName("Yemekhane");
+
+        Unit guvenlikBirimi = new Unit();
+        guvenlikBirimi.setName("Güvenlik Birimi");
+
+        unitRepository.saveAll(List.of(genelSekreterlik, muhendislikFakultesi, fenFakultesi, mimarlikFakultesi, yemekhane, guvenlikBirimi));
 
         // 2. Create the default admin user
         User admin = new User();
@@ -48,14 +64,14 @@ public class DataInitializer implements CommandLineRunner {
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setFullName("Administrator");
         admin.setRole(Role.ADMIN);
-        admin.setUnit(adminUnit);
+        admin.setUnit(genelSekreterlik); // Assign to the correct unit
         admin.setTemporaryPassword(false);
         userRepository.save(admin);
 
         // 3. Create a sample metric for every key defined in MetricKeys.java
         createAllSampleMetrics();
 
-        System.out.println("Database has been re-initialized with default units, admin user, and a full set of sample metrics.");
+        System.out.println("Database has been re-initialized with operational units, admin user, and a full set of sample metrics.");
     }
 
     private void createAllSampleMetrics() {

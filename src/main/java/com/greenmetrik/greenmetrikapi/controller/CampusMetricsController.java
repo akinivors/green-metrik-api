@@ -38,4 +38,11 @@ public class CampusMetricsController {
             @RequestParam(required = false) LocalDate endDate) {
         return campusMetricsService.getAllMetrics(pageable, category, startDate, endDate);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteMetric(@PathVariable Long id) {
+        campusMetricsService.deleteMetric(id);
+    }
 }

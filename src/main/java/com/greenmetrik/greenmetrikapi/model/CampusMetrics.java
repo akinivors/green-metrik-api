@@ -2,11 +2,15 @@ package com.greenmetrik.greenmetrikapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import java.time.LocalDate;
 
 @Data
 @Entity
 @Table(name = "campus_metrics")
+@SQLDelete(sql = "UPDATE campus_metrics SET is_deleted = true WHERE id=?")
+@Where(clause = "is_deleted=false")
 public class CampusMetrics {
 
     @Id
@@ -28,4 +32,7 @@ public class CampusMetrics {
 
     @Column
     private String description;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false; // New soft delete field
 }

@@ -2,11 +2,15 @@ package com.greenmetrik.greenmetrikapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import java.time.LocalDate;
 
 @Data
 @Entity
 @Table(name = "water_consumption")
+@SQLDelete(sql = "UPDATE water_consumption SET is_deleted = true WHERE id=?")
+@Where(clause = "is_deleted=false")
 public class WaterConsumption {
 
     @Id
@@ -31,4 +35,7 @@ public class WaterConsumption {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false; // New soft delete field
 }

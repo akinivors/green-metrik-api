@@ -47,4 +47,8 @@ public class VehicleService {
         Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(spec, pageable);
         return entryPage.map(VehicleEntryResponse::fromEntity);
     }
+
+    public void deleteVehicleEntry(Long id) {
+        vehicleEntryRepository.deleteById(id);
+    }
 }

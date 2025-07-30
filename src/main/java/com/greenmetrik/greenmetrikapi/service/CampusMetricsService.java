@@ -53,4 +53,8 @@ public class CampusMetricsService {
         Page<CampusMetrics> metricsPage = campusMetricsRepository.findAll(spec, pageable);
         return metricsPage.map(CampusMetricsResponse::fromEntity);
     }
+
+    public void deleteMetric(Long id) {
+        campusMetricsRepository.deleteById(id);
+    }
 }

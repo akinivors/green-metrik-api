@@ -53,4 +53,8 @@ public class WasteDataService {
         Page<WasteData> dataPage = wasteDataRepository.findAll(spec, pageable);
         return dataPage.map(WasteDataResponse::fromEntity);
     }
+
+    public void deleteWasteData(Long id) {
+        wasteDataRepository.deleteById(id);
+    }
 }

@@ -3,10 +3,14 @@ package com.greenmetrik.greenmetrikapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Data
 @Entity
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
+@Where(clause = "is_deleted=false")
 public class User {
 
     @Id
@@ -31,4 +35,7 @@ public class User {
 
     @Column(nullable = false)
     private boolean isTemporaryPassword = true; // Default to true for new users
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false; // New soft delete field
 }

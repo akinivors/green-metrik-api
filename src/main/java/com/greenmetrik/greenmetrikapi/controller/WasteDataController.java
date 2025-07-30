@@ -37,4 +37,11 @@ public class WasteDataController {
             @RequestParam(required = false) LocalDate endDate) {
         return wasteDataService.getAllWasteData(pageable, startDate, endDate);
     }
+
+    @DeleteMapping("/waste/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
+    public void deleteWasteData(@PathVariable Long id) {
+        wasteDataService.deleteWasteData(id);
+    }
 }

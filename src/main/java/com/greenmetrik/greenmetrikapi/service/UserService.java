@@ -88,4 +88,8 @@ public class UserService {
             throw new RuntimeException("Password must be at least 8 characters long.");
         }
     }
+
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }

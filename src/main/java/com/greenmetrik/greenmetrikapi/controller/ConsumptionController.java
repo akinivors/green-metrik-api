@@ -59,4 +59,18 @@ public class ConsumptionController {
 
         return consumptionService.getAllWaterConsumption(pageable, unitId, startDate, endDate);
     }
+
+    @DeleteMapping("/electricity/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
+    public void deleteElectricityConsumption(@PathVariable Long id) {
+        consumptionService.deleteElectricityConsumption(id);
+    }
+
+    @DeleteMapping("/water/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
+    public void deleteWaterConsumption(@PathVariable Long id) {
+        consumptionService.deleteWaterConsumption(id);
+    }
 }

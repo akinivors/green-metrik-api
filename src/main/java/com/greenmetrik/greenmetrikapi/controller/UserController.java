@@ -45,4 +45,11 @@ public class UserController {
     public UserResponse getMyProfile(Principal principal) {
         return userService.getMyProfile(principal.getName());
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
 }

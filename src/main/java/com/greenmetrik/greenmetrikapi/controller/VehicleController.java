@@ -37,4 +37,11 @@ public class VehicleController {
             @RequestParam(required = false) LocalDate endDate) {
         return vehicleService.getAllVehicleEntries(pageable, startDate, endDate);
     }
+
+    @DeleteMapping("/vehicle/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'GUVENLIK')")
+    public void deleteVehicleEntry(@PathVariable Long id) {
+        vehicleService.deleteVehicleEntry(id);
+    }
 }

@@ -93,4 +93,12 @@ public class ConsumptionService {
         Page<WaterConsumption> consumptionPage = waterRepository.findAll(spec, pageable);
         return consumptionPage.map(WaterConsumptionResponse::fromEntity);
     }
+
+    public void deleteElectricityConsumption(Long id) {
+        electricityRepository.deleteById(id);
+    }
+
+    public void deleteWaterConsumption(Long id) {
+        waterRepository.deleteById(id);
+    }
 }
