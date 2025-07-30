@@ -4,6 +4,7 @@ import com.greenmetrik.greenmetrikapi.dto.CampusMetricsRequest;
 import com.greenmetrik.greenmetrikapi.dto.CampusMetricsResponse;
 import com.greenmetrik.greenmetrikapi.model.CampusMetrics;
 import com.greenmetrik.greenmetrikapi.model.MetricCategory;
+import com.greenmetrik.greenmetrikapi.model.MetricKeys; // Import MetricKeys
 import com.greenmetrik.greenmetrikapi.repository.CampusMetricsRepository;
 import com.greenmetrik.greenmetrikapi.specifications.CampusMetricsSpecification;
 import org.springframework.data.domain.Page;
@@ -22,9 +23,13 @@ public class CampusMetricsService {
         this.campusMetricsRepository = campusMetricsRepository;
     }
 
+    // ** UPDATED METHOD **
     public CampusMetricsResponse addMetric(CampusMetricsRequest request) {
+        // Validate the incoming metric key
+        MetricKeys.MetricKey metricKeyInfo = MetricKeys.findByKey(request.metricKey());
+
         CampusMetrics metric = new CampusMetrics();
-        metric.setMetricKey(request.metricKey());
+        metric.setMetricKey(metricKeyInfo.key()); // Use the validated key
         metric.setMetricValue(request.metricValue());
         metric.setCategory(MetricCategory.valueOf(request.category().toUpperCase()));
         metric.setMetricDate(request.metricDate());

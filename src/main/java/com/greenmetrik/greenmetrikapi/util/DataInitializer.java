@@ -1,15 +1,19 @@
 package com.greenmetrik.greenmetrikapi.util;
 
-import com.greenmetrik.greenmetrikapi.model.Role;
-import com.greenmetrik.greenmetrikapi.model.Unit;
-import com.greenmetrik.greenmetrikapi.model.User;
+import com.greenmetrik.greenmetrikapi.model.*;
+import com.greenmetrik.greenmetrikapi.repository.CampusMetricsRepository;
 import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -17,41 +21,76 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final UnitRepository unitRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CampusMetricsRepository campusMetricsRepository;
 
-    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, CampusMetricsRepository campusMetricsRepository) {
         this.userRepository = userRepository;
         this.unitRepository = unitRepository;
         this.passwordEncoder = passwordEncoder;
+        this.campusMetricsRepository = campusMetricsRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        // Check if there are any units. If so, don't add more.
-        if (unitRepository.count() == 0) {
-            // 1. Create the Admin Unit
-            Unit adminUnit = new Unit();
-            adminUnit.setName("Admin Unit");
-            unitRepository.save(adminUnit);
+        // Clear all data to ensure a clean slate
+        campusMetricsRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+        unitRepository.deleteAllInBatch();
 
-            // 2. Create sample building units
-            Unit engineeringBuilding = new Unit();
-            engineeringBuilding.setName("Engineering Building");
+        // 1. Create default Units
+        Unit adminUnit = new Unit();
+        adminUnit.setName("Admin Unit");
+        unitRepository.save(adminUnit);
 
-            Unit scienceBuilding = new Unit();
-            scienceBuilding.setName("Science Building");
+        // 2. Create the default admin user
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setFullName("Administrator");
+        admin.setRole(Role.ADMIN);
+        admin.setUnit(adminUnit);
+        admin.setTemporaryPassword(false);
+        userRepository.save(admin);
 
-            unitRepository.saveAll(List.of(engineeringBuilding, scienceBuilding));
+        // 3. Create a sample metric for every key defined in MetricKeys.java
+        createAllSampleMetrics();
 
-            // 3. Create the admin user
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setFullName("Administrator");
-            admin.setRole(Role.ADMIN);
-            admin.setUnit(adminUnit);
-            userRepository.save(admin);
+        System.out.println("Database has been re-initialized with default units, admin user, and a full set of sample metrics.");
+    }
 
-            System.out.println("Database seeded with admin user and sample units.");
-        }
+    private void createAllSampleMetrics() {
+        List<CampusMetrics> metricsToSave = new ArrayList<>();
+
+        Stream.of(
+            MetricKeys.SettingAndInfrastructure.class.getFields(),
+            MetricKeys.EnergyAndClimateChange.class.getFields(),
+            MetricKeys.Transportation.class.getFields(),
+            MetricKeys.EducationAndResearch.class.getFields()
+        )
+        .flatMap(Arrays::stream)
+        .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
+        .forEach(field -> {
+            try {
+                MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
+                CampusMetrics metric = new CampusMetrics();
+                metric.setMetricKey(keyInfo.key());
+                metric.setMetricValue("100"); // Default sample value
+                metric.setMetricDate(LocalDate.of(2024, 1, 1));
+                // Determine category from the class name
+                String categoryName = field.getDeclaringClass().getSimpleName().toUpperCase();
+                if(categoryName.equals("SETTINGANDINFRASTRUCTURE")) categoryName = "SETTING_INFRASTRUCTURE";
+                if(categoryName.equals("ENERGYANDCLIMATECHANGE")) categoryName = "ENERGY_CLIMATE_CHANGE";
+                if(categoryName.equals("EDUCATIONANDRESEARCH")) categoryName = "EDUCATION_RESEARCH";
+
+                metric.setCategory(MetricCategory.valueOf(categoryName));
+                metric.setDescription("Sample data for " + keyInfo.key());
+                metricsToSave.add(metric);
+            } catch (IllegalAccessException e) {
+                // This should not happen for public static fields
+                throw new RuntimeException("Could not access metric key field", e);
+            }
+        });
+
+        campusMetricsRepository.saveAll(metricsToSave);
     }
 }
