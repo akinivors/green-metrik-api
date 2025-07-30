@@ -8,11 +8,14 @@ import com.greenmetrik.greenmetrikapi.model.MetricKeys; // Import MetricKeys
 import com.greenmetrik.greenmetrikapi.repository.CampusMetricsRepository;
 import com.greenmetrik.greenmetrikapi.specifications.CampusMetricsSpecification;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CampusMetricsService {
@@ -39,18 +42,15 @@ public class CampusMetricsService {
         return CampusMetricsResponse.fromEntity(savedMetric);
     }
 
-    public Page<CampusMetricsResponse> getAllMetrics(
-            Pageable pageable,
-            MetricCategory category,
-            LocalDate startDate,
-            LocalDate endDate) {
+    // ** REPLACED METHOD **
+    public Page<CampusMetricsResponse> getAllMetrics(Pageable pageable, MetricCategory category, LocalDate startDate, LocalDate endDate) {
+        // Convert category enum to string for the native query
+        String categoryName = (category != null) ? category.name() : null;
 
-        Specification<CampusMetrics> spec = Specification
-                .where(CampusMetricsSpecification.hasCategory(category))
-                .and(CampusMetricsSpecification.hasMetricDateAfter(startDate))
-                .and(CampusMetricsSpecification.hasMetricDateBefore(endDate));
+        // Call the new, powerful repository method
+        Page<CampusMetrics> metricsPage = campusMetricsRepository.findLatestFiltered(pageable, categoryName, startDate, endDate);
 
-        Page<CampusMetrics> metricsPage = campusMetricsRepository.findAll(spec, pageable);
+        // Map the results to the response DTO
         return metricsPage.map(CampusMetricsResponse::fromEntity);
     }
 
