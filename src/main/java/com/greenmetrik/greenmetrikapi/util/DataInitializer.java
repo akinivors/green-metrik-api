@@ -115,27 +115,27 @@ public class DataInitializer implements CommandLineRunner {
 
         // Helper function to process a single category class
         TriConsumer<Class<?>, MetricCategory, List<CampusMetrics>> processCategory =
-            (categoryClass, categoryEnum, list) -> {
-                Arrays.stream(categoryClass.getFields())
-                    .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
-                    .forEach(field -> {
-                        try {
-                            MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
-                            CampusMetrics metric = new CampusMetrics();
-                            metric.setMetricKey(keyInfo.key());
-                            metric.setMetricDate(sampleDate);
-                            metric.setDescription("Sample data for " + keyInfo.key());
-                            metric.setCategory(categoryEnum); // <-- CORRECTLY ASSIGNED CATEGORY
+                (categoryClass, categoryEnum, list) -> {
+                    Arrays.stream(categoryClass.getFields())
+                            .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
+                            .forEach(field -> {
+                                try {
+                                    MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
+                                    CampusMetrics metric = new CampusMetrics();
+                                    metric.setMetricKey(keyInfo.key());
+                                    metric.setMetricDate(sampleDate);
+                                    metric.setDescription("Sample data for " + keyInfo.key());
+                                    metric.setCategory(categoryEnum); // <-- CORRECTLY ASSIGNED CATEGORY
 
-                            // Add realistic default values here
-                            metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
+                                    // Add realistic default values here
+                                    metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
 
-                            list.add(metric);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
-                        }
-                    });
-            };
+                                    list.add(metric);
+                                } catch (IllegalAccessException e) {
+                                    throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
+                                }
+                            });
+                };
 
         // Process each category using the helper
         processCategory.accept(MetricKeys.SettingAndInfrastructure.class, MetricCategory.SETTING_INFRASTRUCTURE, metricsToSave);
