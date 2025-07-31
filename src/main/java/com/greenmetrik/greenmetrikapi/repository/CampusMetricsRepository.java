@@ -15,8 +15,10 @@ import java.util.Optional;
 
 @Repository
 public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Long>, JpaSpecificationExecutor<CampusMetrics> {
-    // Custom query method to find a metric by its key
-    Optional<CampusMetrics> findByMetricKey(String metricKey);
+
+    // ** THIS METHOD IS UPDATED **
+    @Query("SELECT cm FROM CampusMetrics cm WHERE cm.metricKey = :metricKey ORDER BY cm.id DESC LIMIT 1")
+    Optional<CampusMetrics> findByMetricKey(@Param("metricKey") String metricKey);
 
     // Custom query method to find the latest entry for each metric key
     @Query("SELECT cm FROM CampusMetrics cm WHERE cm.id IN " +

@@ -89,7 +89,16 @@ public class UserService {
         }
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, String currentUsername) {
+        // Find the user to be deleted
+        User userToDelete = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // SECURITY CHECK: Prevent a user from deleting themselves
+        if (userToDelete.getUsername().equals(currentUsername)) {
+            throw new RuntimeException("Admin users cannot delete their own accounts.");
+        }
+
         userRepository.deleteById(id);
     }
 }
