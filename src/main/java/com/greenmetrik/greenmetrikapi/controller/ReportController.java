@@ -1,8 +1,10 @@
 package com.greenmetrik.greenmetrikapi.controller;
 
 import com.greenmetrik.greenmetrikapi.service.ReportService;
-import jakarta.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.JRException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,19 +27,19 @@ public class ReportController {
 
     @GetMapping("/activity-log")
     @PreAuthorize("hasRole('ADMIN')")
-    public void generateActivityLogReport(HttpServletResponse response) throws IOException, JRException {
-        // Set the content type and headers for the response
-        response.setContentType("application/pdf");
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd:hh:mm:ss");
-        String currentDateTime = dateFormatter.format(new Date());
-        String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=activity_log_" + currentDateTime + ".pdf";
-        response.setHeader(headerKey, headerValue);
-
-        // Call the service to get the report content
+    public ResponseEntity<byte[]> generateActivityLogReport() throws IOException, JRException {
         byte[] reportContent = reportService.exportActivityLogReport();
 
-        // Write the report content to the response's output stream
-        response.getOutputStream().write(reportContent);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String currentDateTime = dateFormatter.format(new Date());
+        String filename = "activity_log_" + currentDateTime + ".pdf";
+        headers.setContentDispositionFormData("attachment", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(reportContent);
     }
 }

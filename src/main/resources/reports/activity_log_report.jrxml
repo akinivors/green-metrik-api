@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="activity_log_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a1b2c3d4-e5f6-7890-1234-567890abcdef">
+
+    <!-- PROPERLY ORDERED: conditionalStyle MUST come before any box elements -->
+    <style name="RowStyle" mode="Opaque" backcolor="#FFFFFF">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+            <style backcolor="#F8FAFC"/>
+        </conditionalStyle>
+    </style>
+
+    <!-- Simple header style without complex box styling -->
+    <style name="HeaderStyle" mode="Opaque" backcolor="#1E40AF" forecolor="#FFFFFF"/>
+
+    <!-- Field definitions for bean collection data source -->
+    <field name="timestamp" class="java.lang.String"/>
+    <field name="eventType" class="java.lang.String"/>
+    <field name="description" class="java.lang.String"/>
+    <field name="username" class="java.lang.String"/>
+
+    <!-- Enhanced Report Title -->
+    <title>
+        <band height="80" splitType="Stretch">
+            <!-- Background for title -->
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="80" backcolor="#1E40AF" uuid="11111111-2222-3333-4444-555555555555"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+
+            <!-- Main title -->
+            <staticText>
+                <reportElement x="20" y="15" width="400" height="35" forecolor="#FFFFFF" uuid="22222222-3333-4444-5555-666666666666"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="26" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Activity Dashboard]]></text>
+            </staticText>
+
+            <!-- Subtitle -->
+            <staticText>
+                <reportElement x="20" y="50" width="300" height="20" forecolor="#E2E8F0" uuid="33333333-4444-5555-6666-777777777777"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="12"/>
+                </textElement>
+                <text><![CDATA[System Activity Monitoring Report]]></text>
+            </staticText>
+
+            <!-- Generation date -->
+            <textField>
+                <reportElement x="350" y="55" width="200" height="15" forecolor="#CBD5E1" uuid="44444444-5555-6666-7777-888888888888"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Generated: " + new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <!-- Column Headers -->
+    <columnHeader>
+        <band height="35" splitType="Stretch">
+            <staticText>
+                <reportElement style="HeaderStyle" x="0" y="0" width="140" height="35" uuid="55555555-6666-7777-8888-999999999999"/>
+                <box leftPadding="10">
+                    <bottomPen lineWidth="2.0" lineColor="#1D4ED8"/>
+                </box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TIMESTAMP]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="HeaderStyle" x="140" y="0" width="120" height="35" uuid="66666666-7777-8888-9999-aaaaaaaaaaaa"/>
+                <box leftPadding="10">
+                    <bottomPen lineWidth="2.0" lineColor="#1D4ED8"/>
+                </box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[EVENT TYPE]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="HeaderStyle" x="260" y="0" width="200" height="35" uuid="77777777-8888-9999-aaaa-bbbbbbbbbbbb"/>
+                <box leftPadding="10">
+                    <bottomPen lineWidth="2.0" lineColor="#1D4ED8"/>
+                </box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[DESCRIPTION]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="HeaderStyle" x="460" y="0" width="95" height="35" uuid="88888888-9999-aaaa-bbbb-cccccccccccc"/>
+                <box leftPadding="10">
+                    <bottomPen lineWidth="2.0" lineColor="#1D4ED8"/>
+                </box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[USER]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <!-- Detail Band -->
+    <detail>
+        <band height="45" splitType="Stretch">
+            <!-- Row background -->
+            <rectangle>
+                <reportElement style="RowStyle" x="0" y="0" width="555" height="45" uuid="99999999-aaaa-bbbb-cccc-dddddddddddd"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+
+            <!-- Accent line -->
+            <rectangle>
+                <reportElement x="0" y="0" width="3" height="45" backcolor="#3B82F6" uuid="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+
+            <!-- Bottom border line -->
+            <line>
+                <reportElement x="0" y="44" width="555" height="1" forecolor="#E2E8F0" uuid="bbbbbbbb-cccc-dddd-eeee-ffffffffffff"/>
+                <graphicElement>
+                    <pen lineWidth="0.5"/>
+                </graphicElement>
+            </line>
+
+            <!-- Timestamp field -->
+            <textField textAdjust="StretchHeight">
+                <reportElement x="10" y="5" width="130" height="35" forecolor="#374151" uuid="cccccccc-dddd-eeee-ffff-000000000000"/>
+                <box leftPadding="10"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="10" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{timestamp}]]></textFieldExpression>
+            </textField>
+
+            <!-- Event type badge -->
+            <rectangle>
+                <reportElement x="145" y="10" width="110" height="25" backcolor="#DBEAFE" uuid="dddddddd-eeee-ffff-0000-111111111111"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#93C5FD"/>
+                </graphicElement>
+            </rectangle>
+            <textField textAdjust="StretchHeight">
+                <reportElement x="150" y="10" width="100" height="25" forecolor="#1E40AF" uuid="eeeeeeee-ffff-0000-1111-222222222222"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{eventType}.replace("_", " ")]]></textFieldExpression>
+            </textField>
+
+            <!-- Description field -->
+            <textField textAdjust="StretchHeight">
+                <reportElement x="270" y="5" width="185" height="35" forecolor="#374151" uuid="ffffffff-0000-1111-2222-333333333333"/>
+                <box leftPadding="10"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+            </textField>
+
+            <!-- Username field -->
+            <textField textAdjust="StretchHeight">
+                <reportElement x="470" y="5" width="80" height="35" forecolor="#1E40AF" uuid="00000000-1111-2222-3333-444444444444"/>
+                <box leftPadding="10"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="10" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <!-- Page Footer -->
+    <pageFooter>
+        <band height="35" splitType="Stretch">
+            <!-- Footer separator line -->
+            <line>
+                <reportElement x="0" y="5" width="555" height="1" forecolor="#E2E8F0" uuid="11111111-2222-3333-4444-555555555550"/>
+                <graphicElement>
+                    <pen lineWidth="1.0"/>
+                </graphicElement>
+            </line>
+
+            <!-- Page number -->
+            <textField>
+                <reportElement x="455" y="10" width="100" height="20" forecolor="#64748B" uuid="22222222-3333-4444-5555-666666666660"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+
+            <!-- Footer branding -->
+            <staticText>
+                <reportElement x="0" y="10" width="200" height="20" forecolor="#94A3B8" uuid="33333333-4444-5555-6666-777777777770"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <text><![CDATA[GreenMetrik Analytics Platform]]></text>
+            </staticText>
+        </band>
+    </pageFooter>
+
+</jasperReport>
