@@ -28,12 +28,14 @@ public class ConsumptionService {
     private final UserRepository userRepository;
     private final UnitRepository unitRepository;
     private final WaterConsumptionRepository waterRepository;
+    private final ActivityLogService activityLogService;
 
-    public ConsumptionService(ElectricityConsumptionRepository electricityRepository, UserRepository userRepository, UnitRepository unitRepository, WaterConsumptionRepository waterRepository) {
+    public ConsumptionService(ElectricityConsumptionRepository electricityRepository, UserRepository userRepository, UnitRepository unitRepository, WaterConsumptionRepository waterRepository, ActivityLogService activityLogService) {
         this.electricityRepository = electricityRepository;
         this.userRepository = userRepository;
         this.unitRepository = unitRepository;
         this.waterRepository = waterRepository;
+        this.activityLogService = activityLogService;
     }
 
     public void addElectricityConsumption(ElectricityConsumptionRequest request, String username) {
@@ -50,6 +52,9 @@ public class ConsumptionService {
         consumption.setUser(user);
 
         electricityRepository.save(consumption);
+
+        // Log the electricity consumption creation activity
+        activityLogService.logActivity("ELECTRICITY_LOG_CREATED", "Electricity consumption log created for unit: " + unit.getName(), user);
     }
 
     public void addWaterConsumption(WaterConsumptionRequest request, String username) {
@@ -68,6 +73,9 @@ public class ConsumptionService {
         consumption.setUser(user);
 
         waterRepository.save(consumption);
+
+        // Log the water consumption creation activity
+        activityLogService.logActivity("WATER_LOG_CREATED", "Water consumption log created for unit: " + unit.getName(), user);
     }
 
     public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
@@ -94,11 +102,27 @@ public class ConsumptionService {
         return consumptionPage.map(WaterConsumptionResponse::fromEntity);
     }
 
-    public void deleteElectricityConsumption(Long id) {
+    public void deleteElectricityConsumption(Long id, String currentUsername) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ElectricityConsumption entryToDelete = electricityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Electricity consumption entry not found"));
+
+        String description = "User '" + currentUsername + "' deleted an electricity log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
+        activityLogService.logActivity("ELECTRICITY_LOG_DELETED", description, user);
+
         electricityRepository.deleteById(id);
     }
 
-    public void deleteWaterConsumption(Long id) {
+    public void deleteWaterConsumption(Long id, String currentUsername) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        WaterConsumption entryToDelete = waterRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Water consumption entry not found"));
+
+        String description = "User '" + currentUsername + "' deleted a water log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
+        activityLogService.logActivity("WATER_LOG_DELETED", description, user);
+
         waterRepository.deleteById(id);
     }
 }

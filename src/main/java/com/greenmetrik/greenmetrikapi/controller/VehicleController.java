@@ -41,7 +41,7 @@ public class VehicleController {
     @DeleteMapping("/vehicle/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ADMIN', 'GUVENLIK')")
-    public void deleteVehicleEntry(@PathVariable Long id) {
-        vehicleService.deleteVehicleEntry(id);
+    public void deleteVehicleEntry(@PathVariable Long id, Principal principal) {
+        vehicleService.deleteVehicleEntry(id, principal.getName());
     }
 }

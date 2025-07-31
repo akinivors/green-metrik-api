@@ -19,10 +19,12 @@ public class VehicleService {
 
     private final VehicleEntryRepository vehicleEntryRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
-    public VehicleService(VehicleEntryRepository vehicleEntryRepository, UserRepository userRepository) {
+    public VehicleService(VehicleEntryRepository vehicleEntryRepository, UserRepository userRepository, ActivityLogService activityLogService) {
         this.vehicleEntryRepository = vehicleEntryRepository;
         this.userRepository = userRepository;
+        this.activityLogService = activityLogService;
     }
 
     public void addVehicleEntry(VehicleEntryRequest request, String username) {
@@ -37,6 +39,9 @@ public class VehicleService {
         vehicleEntry.setUser(user);
 
         vehicleEntryRepository.save(vehicleEntry);
+
+        // Log the vehicle entry creation activity
+        activityLogService.logActivity("VEHICLE_ENTRY_CREATED", "Vehicle entry created for date: " + request.entryDate(), user);
     }
 
     public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable, LocalDate startDate, LocalDate endDate) {
@@ -48,7 +53,20 @@ public class VehicleService {
         return entryPage.map(VehicleEntryResponse::fromEntity);
     }
 
-    public void deleteVehicleEntry(Long id) {
+    public void deleteVehicleEntry(Long id, String currentUsername) {
+        // Find the user performing the action
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Find the entry to be deleted to get its details for logging
+        VehicleEntry entryToDelete = vehicleEntryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vehicle entry not found"));
+
+        // Log the deletion event BEFORE deleting
+        String description = "User '" + currentUsername + "' deleted a vehicle entry for date: " + entryToDelete.getEntryDate();
+        activityLogService.logActivity("VEHICLE_ENTRY_DELETED", description, user);
+
+        // Proceed with the deletion
         vehicleEntryRepository.deleteById(id);
     }
 }

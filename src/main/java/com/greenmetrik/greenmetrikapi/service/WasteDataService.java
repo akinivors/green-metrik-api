@@ -19,10 +19,12 @@ public class WasteDataService {
 
     private final WasteDataRepository wasteDataRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
-    public WasteDataService(WasteDataRepository wasteDataRepository, UserRepository userRepository) {
+    public WasteDataService(WasteDataRepository wasteDataRepository, UserRepository userRepository, ActivityLogService activityLogService) {
         this.wasteDataRepository = wasteDataRepository;
         this.userRepository = userRepository;
+        this.activityLogService = activityLogService;
     }
 
     public void addWasteData(WasteDataRequest request, String username) {
@@ -43,6 +45,9 @@ public class WasteDataService {
         wasteData.setUser(user);
 
         wasteDataRepository.save(wasteData);
+
+        // Log the waste data creation activity
+        activityLogService.logActivity("WASTE_DATA_CREATED", "Waste data created for date: " + request.dataDate(), user);
     }
 
     public Page<WasteDataResponse> getAllWasteData(Pageable pageable, LocalDate startDate, LocalDate endDate) {
@@ -54,7 +59,15 @@ public class WasteDataService {
         return dataPage.map(WasteDataResponse::fromEntity);
     }
 
-    public void deleteWasteData(Long id) {
+    public void deleteWasteData(Long id, String currentUsername) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        WasteData entryToDelete = wasteDataRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Waste data entry not found"));
+
+        String description = "User '" + currentUsername + "' deleted a waste data entry for date: " + entryToDelete.getDataDate();
+        activityLogService.logActivity("WASTE_DATA_DELETED", description, user);
+
         wasteDataRepository.deleteById(id);
     }
 }

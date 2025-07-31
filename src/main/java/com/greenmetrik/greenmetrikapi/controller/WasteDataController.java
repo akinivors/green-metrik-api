@@ -41,7 +41,7 @@ public class WasteDataController {
     @DeleteMapping("/waste/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
-    public void deleteWasteData(@PathVariable Long id) {
-        wasteDataService.deleteWasteData(id);
+    public void deleteWasteData(@PathVariable Long id, Principal principal) {
+        wasteDataService.deleteWasteData(id, principal.getName());
     }
 }

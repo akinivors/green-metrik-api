@@ -20,11 +20,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final UnitRepository unitRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ActivityLogService activityLogService;
 
-    public UserService(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, ActivityLogService activityLogService) {
         this.userRepository = userRepository;
         this.unitRepository = unitRepository;
         this.passwordEncoder = passwordEncoder;
+        this.activityLogService = activityLogService;
     }
 
     public UserResponse registerUser(UserRegistrationRequest request) {
@@ -45,6 +47,10 @@ public class UserService {
         newUser.setTemporaryPassword(true); // Setting default temporary password flag
 
         User savedUser = userRepository.save(newUser);
+
+        // Log the user creation activity
+        activityLogService.logActivity("USER_CREATED", "New user registered: " + savedUser.getUsername(), savedUser);
+
         return UserResponse.fromEntity(savedUser);
     }
 
@@ -93,6 +99,8 @@ public class UserService {
         // Find the user to be deleted
         User userToDelete = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        User adminUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
         // SECURITY CHECK: Prevent a user from deleting themselves
         if (userToDelete.getUsername().equals(currentUsername)) {
@@ -100,5 +108,8 @@ public class UserService {
         }
 
         userRepository.deleteById(id);
+
+        // Log the user deletion activity
+        activityLogService.logActivity("USER_DELETED", "Admin '" + adminUser.getUsername() + "' deleted user '" + userToDelete.getUsername() + "'", adminUser);
     }
 }

@@ -63,14 +63,14 @@ public class ConsumptionController {
     @DeleteMapping("/electricity/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
-    public void deleteElectricityConsumption(@PathVariable Long id) {
-        consumptionService.deleteElectricityConsumption(id);
+    public void deleteElectricityConsumption(@PathVariable Long id, Principal principal) {
+        consumptionService.deleteElectricityConsumption(id, principal.getName());
     }
 
     @DeleteMapping("/water/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
-    public void deleteWaterConsumption(@PathVariable Long id) {
-        consumptionService.deleteWaterConsumption(id);
+    public void deleteWaterConsumption(@PathVariable Long id, Principal principal) {
+        consumptionService.deleteWaterConsumption(id, principal.getName());
     }
 }
