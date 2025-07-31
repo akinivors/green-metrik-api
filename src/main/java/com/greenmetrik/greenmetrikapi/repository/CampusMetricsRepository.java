@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,12 +19,7 @@ public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Lo
     @Query("SELECT cm FROM CampusMetrics cm WHERE cm.metricKey = :metricKey ORDER BY cm.id DESC LIMIT 1")
     Optional<CampusMetrics> findByMetricKey(@Param("metricKey") String metricKey);
 
-    // Custom query method to find the latest entry for each metric key
-    @Query("SELECT cm FROM CampusMetrics cm WHERE cm.id IN " +
-           "(SELECT MAX(cm2.id) FROM CampusMetrics cm2 GROUP BY cm2.metricKey)")
-    List<CampusMetrics> findLatestMetrics();
-
-    // ** REPLACED "findLatestMetrics" with this more powerful native query **
+    // ** Powerful native query with filtering and pagination **
     @Query(
         value = "SELECT cm.* FROM campus_metrics cm " +
                 "INNER JOIN (" +
@@ -35,7 +29,8 @@ public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Lo
                 ") latest ON cm.metric_key = latest.metric_key AND cm.id = latest.max_id " +
                 "WHERE (:category IS NULL OR cm.category = :category) " +
                 "AND (CAST(:startDate AS date) IS NULL OR cm.metric_date >= :startDate) " +
-                "AND (CAST(:endDate AS date) IS NULL OR cm.metric_date <= :endDate)",
+                "AND (CAST(:endDate AS date) IS NULL OR cm.metric_date <= :endDate) " +
+                "ORDER BY cm.category, cm.id",
         nativeQuery = true
     )
     Page<CampusMetrics> findLatestFiltered(
