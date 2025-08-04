@@ -6,5 +6,6 @@ public record VehicleEntryRequest(
     LocalDate entryDate,
     int publicTransportCount,
     int privateVehicleCount,
+    int motorcycleCount,
     int zevCount
 ) {}

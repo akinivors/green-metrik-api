@@ -24,6 +24,7 @@ public final class MetricKeys {
         public static final MetricKey TOTAL_ADMINISTRATIVE_STAFF = new MetricKey("total_administrative_staff", "people");
         public static final MetricKey TOTAL_UNIVERSITY_BUDGET = new MetricKey("total_university_budget", "USD");
         public static final MetricKey SUSTAINABILITY_BUDGET = new MetricKey("sustainability_budget", "USD");
+        public static final MetricKey CONSERVATION_PROGRAM_IMPLEMENTATION_PERCENT = new MetricKey("conservation_program_implementation_percent", "%");
     }
 
     public static final class EnergyAndClimateChange {
@@ -31,16 +32,23 @@ public final class MetricKeys {
         public static final MetricKey ENERGY_EFFICIENT_APPLIANCES = new MetricKey("energy_efficient_appliances", "%");
         public static final MetricKey TOTAL_RENEWABLE_ENERGY_PRODUCTION_KWH = new MetricKey("total_renewable_energy_production_kwh", "kWh");
         public static final MetricKey TOTAL_CARBON_FOOTPRINT_TONS = new MetricKey("total_carbon_footprint_tons", "tons CO₂e");
+        public static final MetricKey SMART_BUILDING_AREA_M2 = new MetricKey("smart_building_area_m2", "m²");
+        public static final MetricKey TOTAL_BUILDING_AREA_M2 = new MetricKey("total_building_area_m2", "m²");
+        public static final MetricKey RENEWABLE_ENERGY_SOURCE_COUNT = new MetricKey("renewable_energy_source_count", "count");
+        public static final MetricKey GREEN_BUILDING_ELEMENTS_COUNT = new MetricKey("green_building_elements_count", "count");
+        public static final MetricKey INNOVATIVE_ENERGY_PROGRAMS_COUNT = new MetricKey("innovative_energy_programs_count", "count");
     }
 
     public static final class Waste {
          private Waste() {}
-         // Add Waste metric keys here if needed
+         public static final MetricKey PAPER_PLASTIC_REDUCTION_PROGRAMS_COUNT = new MetricKey("paper_plastic_reduction_programs_count", "count");
+         public static final MetricKey SEWAGE_TREATMENT_LEVEL = new MetricKey("sewage_treatment_level", "level");
     }
 
     public static final class Water {
         private Water() {}
-        // Add Water metric keys here if needed
+        public static final MetricKey WATER_CONSERVATION_PERCENTAGE = new MetricKey("water_conservation_percentage", "%");
+        public static final MetricKey WATER_EFFICIENT_APPLIANCE_PERCENTAGE = new MetricKey("water_efficient_appliance_percentage", "%");
     }
 
     public static final class Transportation {

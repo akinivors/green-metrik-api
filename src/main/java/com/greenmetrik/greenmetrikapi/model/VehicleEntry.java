@@ -22,6 +22,7 @@ public class VehicleEntry {
 
     private int publicTransportCount;
     private int privateVehicleCount;
+    private int motorcycleCount;
     private int zevCount; // New column
 
     // The user who submitted this data.

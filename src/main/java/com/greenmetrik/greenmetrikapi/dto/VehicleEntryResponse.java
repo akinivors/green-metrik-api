@@ -8,6 +8,7 @@ public record VehicleEntryResponse(
     LocalDate entryDate,
     int publicTransportCount,
     int privateVehicleCount,
+    int motorcycleCount,
     int zevCount,
     String submittedByUsername
 ) {
@@ -17,6 +18,7 @@ public record VehicleEntryResponse(
             entity.getEntryDate(),
             entity.getPublicTransportCount(),
             entity.getPrivateVehicleCount(),
+            entity.getMotorcycleCount(),
             entity.getZevCount(),
             entity.getUser().getUsername()
         );

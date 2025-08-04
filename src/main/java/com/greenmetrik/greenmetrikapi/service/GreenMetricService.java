@@ -2,8 +2,10 @@ package com.greenmetrik.greenmetrikapi.service;
 
 import com.greenmetrik.greenmetrikapi.dto.GreenMetricDTO;
 import com.greenmetrik.greenmetrikapi.model.CampusMetrics;
+import com.greenmetrik.greenmetrikapi.model.ElectricityConsumption;
 import com.greenmetrik.greenmetrikapi.model.MetricKeys;
 import com.greenmetrik.greenmetrikapi.repository.CampusMetricsRepository;
+import com.greenmetrik.greenmetrikapi.repository.ElectricityConsumptionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,14 +14,14 @@ import java.util.Optional;
 public class GreenMetricService {
 
     private final CampusMetricsRepository campusMetricsRepository;
+    private final ElectricityConsumptionRepository electricityRepository;
 
-    public GreenMetricService(CampusMetricsRepository campusMetricsRepository) {
+    public GreenMetricService(CampusMetricsRepository campusMetricsRepository, ElectricityConsumptionRepository electricityRepository) {
         this.campusMetricsRepository = campusMetricsRepository;
+        this.electricityRepository = electricityRepository;
     }
 
-    // ** NEW METHOD **
     public GreenMetricDTO.SettingAndInfrastructureStats calculateSettingAndInfrastructureStats() {
-        // Fetch all necessary raw values
         double totalArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_CAMPUS_AREA_M2.key());
         double openSpaceArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.OPEN_SPACE_AREA_M2.key());
         double forestArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.FOREST_VEGETATION_AREA_M2.key());
@@ -31,7 +33,6 @@ public class GreenMetricService {
         double totalBudget = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_UNIVERSITY_BUDGET.key());
         double sustainabilityBudget = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.SUSTAINABILITY_BUDGET.key());
 
-        // Perform calculations
         Double openSpaceRatio = (totalArea > 0) ? (openSpaceArea / totalArea) * 100 : 0.0;
         Double forestRatio = (totalArea > 0) ? (forestArea / totalArea) * 100 : 0.0;
         Double plantedRatio = (totalArea > 0) ? (plantedArea / totalArea) * 100 : 0.0;
@@ -39,67 +40,46 @@ public class GreenMetricService {
         Double campusPopulation = totalStudents + academicStaff + adminStaff;
         Double sustainabilityBudgetPercentage = (totalBudget > 0) ? (sustainabilityBudget / totalBudget) * 100 : 0.0;
 
-        // Return the DTO with calculated values
         return new GreenMetricDTO.SettingAndInfrastructureStats(
-            openSpaceRatio,
-            forestRatio,
-            plantedRatio,
-            absorptionRatio,
-            campusPopulation,
-            sustainabilityBudgetPercentage
+            openSpaceRatio, forestRatio, plantedRatio, absorptionRatio, campusPopulation, sustainabilityBudgetPercentage
         );
     }
 
-    // ** NEW METHOD **
     public GreenMetricDTO.EnergyAndClimateChangeStats calculateEnergyAndClimateChangeStats() {
-        // Fetch all necessary raw values
         double energyEfficientAppliances = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.ENERGY_EFFICIENT_APPLIANCES.key());
         double renewableEnergyProduction = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.TOTAL_RENEWABLE_ENERGY_PRODUCTION_KWH.key());
         double totalCarbonFootprint = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.TOTAL_CARBON_FOOTPRINT_TONS.key());
-
-        // Fetch population for per-person calculation
+        double totalEnergyConsumption = getTotalElectricityConsumption();
         double totalStudents = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_STUDENTS.key());
         double academicStaff = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_ACADEMIC_STAFF.key());
         double adminStaff = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_ADMINISTRATIVE_STAFF.key());
         double campusPopulation = totalStudents + academicStaff + adminStaff;
 
-        // Perform calculations
-        // Assuming the raw value is a percentage already
-        Double energyEfficientAppliancesUsage = energyEfficientAppliances;
-
-        // This calculation might need total energy consumption later, for now, we return the raw production
-        Double renewableEnergyProductionRatio = renewableEnergyProduction;
-
+        Double renewableEnergyProductionRatio = (totalEnergyConsumption > 0) ? (renewableEnergyProduction / totalEnergyConsumption) * 100 : 0.0;
         Double carbonFootprintPerPerson = (campusPopulation > 0) ? (totalCarbonFootprint / campusPopulation) : 0.0;
 
-        // Return the DTO with calculated values
         return new GreenMetricDTO.EnergyAndClimateChangeStats(
-            energyEfficientAppliancesUsage,
-            renewableEnergyProductionRatio,
-            carbonFootprintPerPerson
+            energyEfficientAppliances, renewableEnergyProductionRatio, carbonFootprintPerPerson
         );
     }
 
-    // ** NEW METHOD **
+    public GreenMetricDTO.WaterStats calculateWaterStats() {
+        double conservationPercentage = getMetricValueAsDouble(MetricKeys.Water.WATER_CONSERVATION_PERCENTAGE.key());
+        double appliancePercentage = getMetricValueAsDouble(MetricKeys.Water.WATER_EFFICIENT_APPLIANCE_PERCENTAGE.key());
+
+        return new GreenMetricDTO.WaterStats(conservationPercentage, appliancePercentage);
+    }
+
     public GreenMetricDTO.TransportationStats calculateTransportationStats() {
-        // Fetch all necessary raw values
         double groundParkingArea = getMetricValueAsDouble(MetricKeys.Transportation.GROUND_PARKING_AREA_M2.key());
         double totalArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_CAMPUS_AREA_M2.key());
         int initiatives = getMetricValueAsInteger(MetricKeys.Transportation.INITIATIVES_TO_DECREASE_PRIVATE_VEHICLES.key());
-
-        // Perform calculations
         Double groundParkingRatio = (totalArea > 0) ? (groundParkingArea / totalArea) * 100 : 0.0;
 
-        // Return the DTO with calculated values
-        return new GreenMetricDTO.TransportationStats(
-            groundParkingRatio,
-            initiatives
-        );
+        return new GreenMetricDTO.TransportationStats(groundParkingRatio, initiatives);
     }
 
-    // ** NEW METHOD **
     public GreenMetricDTO.EducationAndResearchStats calculateEducationAndResearchStats() {
-        // Fetch all necessary raw values
         double sustainabilityCourses = getMetricValueAsDouble(MetricKeys.EducationAndResearch.SUSTAINABILITY_COURSES.key());
         double totalCourses = getMetricValueAsDouble(MetricKeys.EducationAndResearch.TOTAL_COURSES.key());
         double sustainabilityResearchFunding = getMetricValueAsDouble(MetricKeys.EducationAndResearch.SUSTAINABILITY_RESEARCH_FUNDING.key());
@@ -114,27 +94,32 @@ public class GreenMetricService {
         double greenJobsGraduates = getMetricValueAsDouble(MetricKeys.EducationAndResearch.GRADUATES_IN_GREEN_JOBS.key());
         double totalGraduates = getMetricValueAsDouble(MetricKeys.EducationAndResearch.TOTAL_GRADUATES.key());
 
-        // Perform calculations
         Double coursesRatio = (totalCourses > 0) ? (sustainabilityCourses / totalCourses) * 100 : 0.0;
         Double fundingRatio = (totalResearchFunding > 0) ? (sustainabilityResearchFunding / totalResearchFunding) * 100 : 0.0;
         Double greenGraduatesRatio = (totalGraduates > 0) ? (greenJobsGraduates / totalGraduates) * 100 : 0.0;
 
-        // Return the DTO with calculated values
         return new GreenMetricDTO.EducationAndResearchStats(
-            coursesRatio,
-            fundingRatio,
-            sustainabilityPublications,
-            sustainabilityEvents,
-            studentActivities,
-            culturalActivities,
-            internationalPrograms,
-            communityPrograms,
-            sustainabilityStartups,
-            greenGraduatesRatio
+            coursesRatio, fundingRatio, sustainabilityPublications, sustainabilityEvents, studentActivities,
+            culturalActivities, internationalPrograms, communityPrograms, sustainabilityStartups, greenGraduatesRatio
         );
     }
 
-    // ** NEW HELPER METHOD **
+    public GreenMetricDTO calculateAllGreenMetricStats() {
+        GreenMetricDTO.SettingAndInfrastructureStats siStats = calculateSettingAndInfrastructureStats();
+        GreenMetricDTO.EnergyAndClimateChangeStats ecStats = calculateEnergyAndClimateChangeStats();
+        GreenMetricDTO.WaterStats waterStats = calculateWaterStats();
+        GreenMetricDTO.TransportationStats trStats = calculateTransportationStats();
+        GreenMetricDTO.EducationAndResearchStats edStats = calculateEducationAndResearchStats();
+
+        return new GreenMetricDTO(siStats, ecStats, waterStats, trStats, edStats);
+    }
+
+    private double getTotalElectricityConsumption() {
+        return electricityRepository.findAll().stream()
+                .mapToDouble(ElectricityConsumption::getConsumptionKwh)
+                .sum();
+    }
+
     private double getMetricValueAsDouble(String metricKey) {
         return campusMetricsRepository.findByMetricKey(metricKey)
                 .map(CampusMetrics::getMetricValue)
@@ -147,21 +132,5 @@ public class GreenMetricService {
                 .map(CampusMetrics::getMetricValue)
                 .map(Integer::parseInt)
                 .orElse(0);
-    }
-
-    public GreenMetricDTO calculateAllGreenMetricStats() {
-        // Call each of the individual calculation methods
-        GreenMetricDTO.SettingAndInfrastructureStats siStats = calculateSettingAndInfrastructureStats();
-        GreenMetricDTO.EnergyAndClimateChangeStats ecStats = calculateEnergyAndClimateChangeStats();
-        GreenMetricDTO.TransportationStats trStats = calculateTransportationStats();
-        GreenMetricDTO.EducationAndResearchStats edStats = calculateEducationAndResearchStats();
-
-        // Assemble the final, complete DTO
-        return new GreenMetricDTO(
-            siStats,
-            ecStats,
-            trStats,
-            edStats
-        );
     }
 }
