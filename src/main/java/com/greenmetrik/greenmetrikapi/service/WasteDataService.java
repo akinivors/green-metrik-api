@@ -2,6 +2,7 @@ package com.greenmetrik.greenmetrikapi.service;
 
 import com.greenmetrik.greenmetrikapi.dto.WasteDataRequest;
 import com.greenmetrik.greenmetrikapi.dto.WasteDataResponse;
+import com.greenmetrik.greenmetrikapi.exception.ResourceNotFoundException;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.model.WasteData;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
@@ -29,7 +30,7 @@ public class WasteDataService {
 
     public void addWasteData(WasteDataRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 
         WasteData wasteData = new WasteData();
         wasteData.setDataDate(request.dataDate());
@@ -61,9 +62,9 @@ public class WasteDataService {
 
     public void deleteWasteData(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
         WasteData entryToDelete = wasteDataRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Waste data entry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Waste data entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted a waste data entry for date: " + entryToDelete.getDataDate();
         activityLogService.logActivity("WASTE_DATA_DELETED", description, user);

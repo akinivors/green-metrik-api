@@ -3,6 +3,7 @@ package com.greenmetrik.greenmetrikapi.controller;
 import com.greenmetrik.greenmetrikapi.dto.WasteDataRequest;
 import com.greenmetrik.greenmetrikapi.dto.WasteDataResponse;
 import com.greenmetrik.greenmetrikapi.service.WasteDataService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class WasteDataController {
     @PostMapping("/waste")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'YEMEKHANE')")
-    public void addWasteData(@RequestBody WasteDataRequest request, Principal principal) {
+    public void addWasteData(@Valid @RequestBody WasteDataRequest request, Principal principal) {
         wasteDataService.addWasteData(request, principal.getName());
     }
 

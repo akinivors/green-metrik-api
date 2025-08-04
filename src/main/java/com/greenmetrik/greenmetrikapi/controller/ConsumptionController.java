@@ -5,6 +5,7 @@ import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.service.ConsumptionService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,14 +28,14 @@ public class ConsumptionController {
     @PostMapping("/electricity")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
-    public void addElectricityConsumption(@RequestBody ElectricityConsumptionRequest request, Principal principal) {
+    public void addElectricityConsumption(@Valid @RequestBody ElectricityConsumptionRequest request, Principal principal) {
         consumptionService.addElectricityConsumption(request, principal.getName());
     }
 
     @PostMapping("/water")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'BINA_GOREVLISI')")
-    public void addWaterConsumption(@RequestBody WaterConsumptionRequest request, Principal principal) {
+    public void addWaterConsumption(@Valid @RequestBody WaterConsumptionRequest request, Principal principal) {
         consumptionService.addWaterConsumption(request, principal.getName());
     }
 
