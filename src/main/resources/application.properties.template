@@ -1,14 +1,14 @@
 # ===================================================================
-# Environment Variable-Based Configuration
+# Application Configuration Template
 # ===================================================================
-# The application will use the environment variable if it is set.
-# Otherwise, it will fall back to the default value after the colon.
+# Copy this file to "application.properties" and fill in your local values.
+# This file is ignored by Git.
 
 # Local PostgreSQL Settings
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/greenmetric_db}
 spring.datasource.username=${DB_USERNAME:postgres}
-spring.datasource.password=${DB_PASSWORD:Lale5146}
+spring.datasource.password=${DB_PASSWORD:}
 
 # JPA Settings
-spring.jpa.hibernate.ddl-auto=create
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false

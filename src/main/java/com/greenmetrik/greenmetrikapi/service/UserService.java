@@ -3,6 +3,9 @@ package com.greenmetrik.greenmetrikapi.service;
 import com.greenmetrik.greenmetrikapi.dto.ChangePasswordRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserResponse;
+import com.greenmetrik.greenmetrikapi.exception.DuplicateResourceException;
+import com.greenmetrik.greenmetrikapi.exception.InvalidRequestException;
+import com.greenmetrik.greenmetrikapi.exception.ResourceNotFoundException;
 import com.greenmetrik.greenmetrikapi.model.Role;
 import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
@@ -31,12 +34,12 @@ public class UserService {
 
     public UserResponse registerUser(UserRegistrationRequest request) {
         if (userRepository.findByUsername(request.username()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new DuplicateResourceException("Username '" + request.username() + "' already exists");
         }
-        validatePassword(request.password()); // Add password validation
+        validatePassword(request.password());
 
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new RuntimeException("Unit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
 
         User newUser = new User();
         newUser.setUsername(request.username());
@@ -44,11 +47,9 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode(request.password()));
         newUser.setRole(Role.valueOf(request.role().toUpperCase()));
         newUser.setUnit(unit);
-        newUser.setTemporaryPassword(true); // Setting default temporary password flag
+        newUser.setTemporaryPassword(true);
 
         User savedUser = userRepository.save(newUser);
-
-        // Log the user creation activity
         activityLogService.logActivity("USER_CREATED", "New user registered: " + savedUser.getUsername(), savedUser);
 
         return UserResponse.fromEntity(savedUser);
@@ -63,53 +64,41 @@ public class UserService {
 
     public void changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 
-        // 1. Check if the old password is correct
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid old password");
+            throw new InvalidRequestException("Invalid old password");
         }
 
-        validatePassword(request.newPassword()); // Add password validation
-
-        // 2. Encode and set the new password
+        validatePassword(request.newPassword());
         user.setPassword(passwordEncoder.encode(request.newPassword()));
-
-        // 3. Update the temporary password flag
         user.setTemporaryPassword(false);
-
-        // 4. Save the updated user
         userRepository.save(user);
     }
 
     public UserResponse getMyProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
         return UserResponse.fromEntity(user);
     }
 
-    // Add this private helper method for password validation
     private void validatePassword(String password) {
         if (password == null || password.length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters long.");
+            throw new InvalidRequestException("Password must be at least 8 characters long.");
         }
     }
 
     public void deleteUser(Long id, String currentUsername) {
-        // Find the user to be deleted
         User userToDelete = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         User adminUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin user not found with username: " + currentUsername));
 
-        // SECURITY CHECK: Prevent a user from deleting themselves
         if (userToDelete.getUsername().equals(currentUsername)) {
-            throw new RuntimeException("Admin users cannot delete their own accounts.");
+            throw new InvalidRequestException("Admin users cannot delete their own accounts.");
         }
 
         userRepository.deleteById(id);
-
-        // Log the user deletion activity
         activityLogService.logActivity("USER_DELETED", "Admin '" + adminUser.getUsername() + "' deleted user '" + userToDelete.getUsername() + "'", adminUser);
     }
 }

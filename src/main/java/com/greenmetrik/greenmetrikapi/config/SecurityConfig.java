@@ -24,23 +24,31 @@ public class SecurityConfig {
 
     private final JwtAuthFilter authFilter;
     private final UserDetailsService userDetailsService;
+    private final AuthEntryPointJwt authEntryPointJwt;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthFilter authFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthFilter authFilter, UserDetailsService userDetailsService, AuthEntryPointJwt authEntryPointJwt, CustomAccessDeniedHandler accessDeniedHandler) {
         this.authFilter = authFilter;
         this.userDetailsService = userDetailsService;
+        this.authEntryPointJwt = authEntryPointJwt;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/public/**").permitAll() // Add public path
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests
-                        .anyRequest().authenticated() // Secure all other endpoints
+                .exceptionHandling(exp -> exp
+                        .authenticationEntryPoint(authEntryPointJwt)
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Use stateless sessions
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/login", "/api/public/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

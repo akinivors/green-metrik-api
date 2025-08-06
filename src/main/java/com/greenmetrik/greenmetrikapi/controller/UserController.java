@@ -4,6 +4,7 @@ import com.greenmetrik.greenmetrikapi.dto.ChangePasswordRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserResponse;
 import com.greenmetrik.greenmetrikapi.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponse registerUser(@RequestBody UserRegistrationRequest request) {
+    public UserResponse registerUser(@Valid @RequestBody UserRegistrationRequest request) {
         return userService.registerUser(request);
     }
 
@@ -36,7 +37,7 @@ public class UserController {
 
     @PostMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
-    public void changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest request, Principal principal) {
         userService.changePassword(principal.getName(), request);
     }
 

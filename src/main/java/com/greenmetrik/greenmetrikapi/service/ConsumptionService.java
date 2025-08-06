@@ -4,6 +4,7 @@ import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.ElectricityConsumptionResponse;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionRequest;
 import com.greenmetrik.greenmetrikapi.dto.WaterConsumptionResponse;
+import com.greenmetrik.greenmetrikapi.exception.ResourceNotFoundException;
 import com.greenmetrik.greenmetrikapi.model.ElectricityConsumption;
 import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
@@ -40,9 +41,9 @@ public class ConsumptionService {
 
     public void addElectricityConsumption(ElectricityConsumptionRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new RuntimeException("Unit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
 
         ElectricityConsumption consumption = new ElectricityConsumption();
         consumption.setPeriodStartDate(request.periodStartDate());
@@ -59,9 +60,9 @@ public class ConsumptionService {
 
     public void addWaterConsumption(WaterConsumptionRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new RuntimeException("Unit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
 
         WaterConsumption consumption = new WaterConsumption();
         consumption.setPeriodStartDate(request.periodStartDate());
@@ -104,9 +105,9 @@ public class ConsumptionService {
 
     public void deleteElectricityConsumption(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
         ElectricityConsumption entryToDelete = electricityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Electricity consumption entry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Electricity consumption entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted an electricity log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
         activityLogService.logActivity("ELECTRICITY_LOG_DELETED", description, user);
@@ -116,9 +117,9 @@ public class ConsumptionService {
 
     public void deleteWaterConsumption(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
         WaterConsumption entryToDelete = waterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Water consumption entry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Water consumption entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted a water log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
         activityLogService.logActivity("WATER_LOG_DELETED", description, user);

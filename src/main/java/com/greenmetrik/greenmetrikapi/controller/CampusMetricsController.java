@@ -4,6 +4,7 @@ import com.greenmetrik.greenmetrikapi.dto.CampusMetricsRequest;
 import com.greenmetrik.greenmetrikapi.dto.CampusMetricsResponse;
 import com.greenmetrik.greenmetrikapi.model.MetricCategory;
 import com.greenmetrik.greenmetrikapi.service.CampusMetricsService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class CampusMetricsController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public CampusMetricsResponse addMetric(@RequestBody CampusMetricsRequest request) {
+    public CampusMetricsResponse addMetric(@Valid @RequestBody CampusMetricsRequest request) {
         return campusMetricsService.addMetric(request);
     }
 

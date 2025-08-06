@@ -3,6 +3,7 @@ package com.greenmetrik.greenmetrikapi.controller;
 import com.greenmetrik.greenmetrikapi.dto.VehicleEntryRequest;
 import com.greenmetrik.greenmetrikapi.dto.VehicleEntryResponse;
 import com.greenmetrik.greenmetrikapi.service.VehicleService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class VehicleController {
     @PostMapping("/vehicle")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'GUVENLIK')")
-    public void addVehicleEntry(@RequestBody VehicleEntryRequest request, Principal principal) {
+    public void addVehicleEntry(@Valid @RequestBody VehicleEntryRequest request, Principal principal) {
         vehicleService.addVehicleEntry(request, principal.getName());
     }
 

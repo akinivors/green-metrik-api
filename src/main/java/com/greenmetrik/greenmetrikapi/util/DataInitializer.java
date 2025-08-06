@@ -47,7 +47,7 @@ public class DataInitializer implements CommandLineRunner {
         if (unitRepository.count() == 0 && userRepository.count() == 0) {
             System.out.println("Database is empty. Initializing with sample data...");
 
-            // 1. Create units
+            // 1. Create units (Using correct pattern with default constructor + setter)
             Unit genelSekreterlik = new Unit();
             genelSekreterlik.setName("Genel Sekreterlik");
 
@@ -117,24 +117,24 @@ public class DataInitializer implements CommandLineRunner {
         LocalDate sampleDate = LocalDate.of(2024, 1, 1);
 
         TriConsumer<Class<?>, MetricCategory, List<CampusMetrics>> processCategory =
-                (categoryClass, categoryEnum, list) -> {
-                    Arrays.stream(categoryClass.getFields())
-                            .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
-                            .forEach(field -> {
-                                try {
-                                    MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
-                                    CampusMetrics metric = new CampusMetrics();
-                                    metric.setMetricKey(keyInfo.key());
-                                    metric.setMetricDate(sampleDate);
-                                    metric.setDescription("Sample data for " + keyInfo.key());
-                                    metric.setCategory(categoryEnum);
-                                    metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
-                                    list.add(metric);
-                                } catch (IllegalAccessException e) {
-                                    throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
-                                }
-                            });
-                };
+            (categoryClass, categoryEnum, list) -> {
+                Arrays.stream(categoryClass.getFields())
+                    .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
+                    .forEach(field -> {
+                        try {
+                            MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
+                            CampusMetrics metric = new CampusMetrics();
+                            metric.setMetricKey(keyInfo.key());
+                            metric.setMetricDate(sampleDate);
+                            metric.setDescription("Sample data for " + keyInfo.key());
+                            metric.setCategory(categoryEnum);
+                            metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
+                            list.add(metric);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
+                        }
+                    });
+            };
 
         processCategory.accept(MetricKeys.SettingAndInfrastructure.class, MetricCategory.SETTING_INFRASTRUCTURE, metricsToSave);
         processCategory.accept(MetricKeys.EnergyAndClimateChange.class, MetricCategory.ENERGY_CLIMATE_CHANGE, metricsToSave);

@@ -2,6 +2,7 @@ package com.greenmetrik.greenmetrikapi.service;
 
 import com.greenmetrik.greenmetrikapi.dto.VehicleEntryRequest;
 import com.greenmetrik.greenmetrikapi.dto.VehicleEntryResponse;
+import com.greenmetrik.greenmetrikapi.exception.ResourceNotFoundException;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.model.VehicleEntry;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
@@ -29,7 +30,7 @@ public class VehicleService {
 
     public void addVehicleEntry(VehicleEntryRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 
         VehicleEntry vehicleEntry = new VehicleEntry();
         vehicleEntry.setEntryDate(request.entryDate());
@@ -57,11 +58,11 @@ public class VehicleService {
     public void deleteVehicleEntry(Long id, String currentUsername) {
         // Find the user performing the action
         User user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
 
         // Find the entry to be deleted to get its details for logging
         VehicleEntry entryToDelete = vehicleEntryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle entry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle entry not found with id: " + id));
 
         // Log the deletion event BEFORE deleting
         String description = "User '" + currentUsername + "' deleted a vehicle entry for date: " + entryToDelete.getEntryDate();
