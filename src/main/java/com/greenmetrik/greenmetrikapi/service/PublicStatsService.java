@@ -51,14 +51,26 @@ public class PublicStatsService {
     }
 
     private PublicStatsDTO.PublicStatsResponse getConsumptionStats(LocalDate startDate, LocalDate endDate, String period) {
-        // This method's logic for fetching total consumption can be improved.
-        // For now, we leave it as is, but a single query would be more efficient.
-        Double totalElec = elecRepo.findAll().stream().mapToDouble(e -> e.getConsumptionKwh()).sum();
-        Double totalWater = waterRepo.findAll().stream().mapToDouble(w -> w.getConsumptionTon()).sum();
-        var summary = new PublicStatsDTO.ConsumptionSummary(totalElec, totalWater);
+        // Consumption data is monthly, so we handle it differently than daily data
+        if ("last_month".equals(period)) {
+            // For last_month: get the most recent monthly consumption entry
+            Double latestElec = elecRepo.findAll().stream()
+                .filter(e -> e.getPeriodEndDate().isAfter(startDate))
+                .mapToDouble(e -> e.getConsumptionKwh())
+                .findFirst()
+                .orElse(0.0);
 
-        Object graphData = null;
-        if ("last_year".equals(period)) {
+            Double latestWater = waterRepo.findAll().stream()
+                .filter(w -> w.getPeriodEndDate().isAfter(startDate))
+                .mapToDouble(w -> w.getConsumptionTon())
+                .findFirst()
+                .orElse(0.0);
+
+            var summary = new PublicStatsDTO.ConsumptionSummary(latestElec, latestWater);
+            return new PublicStatsDTO.PublicStatsResponse(summary, null); // No graph for single month
+
+        } else if ("last_year".equals(period)) {
+            // For last_year: get 12 months of data for the graph
             List<PublicStatsDTO.MonthlyConsumptionGraphPoint> elecData = elecRepo.findMonthlyConsumptionBetweenDates(startDate, endDate);
             List<PublicStatsDTO.MonthlyConsumptionGraphPoint> waterData = waterRepo.findMonthlyConsumptionBetweenDates(startDate, endDate);
 
@@ -71,9 +83,17 @@ public class PublicStatsService {
                         (p1.waterTon() != null ? p1.waterTon() : 0.0) + (p2.waterTon() != null ? p2.waterTon() : 0.0)),
                     java.util.LinkedHashMap::new
                 ));
-            graphData = new ArrayList<>(mergedMap.values());
+
+            // For yearly summary, sum all the monthly data
+            Double totalElec = elecData.stream().mapToDouble(PublicStatsDTO.MonthlyConsumptionGraphPoint::electricityKwh).sum();
+            Double totalWater = waterData.stream().mapToDouble(PublicStatsDTO.MonthlyConsumptionGraphPoint::waterTon).sum();
+            var summary = new PublicStatsDTO.ConsumptionSummary(totalElec, totalWater);
+
+            return new PublicStatsDTO.PublicStatsResponse(summary, new ArrayList<>(mergedMap.values()));
+        } else {
+            // Consumption data doesn't support weekly periods since it's monthly data
+            throw new IllegalArgumentException("Consumption data only supports 'last_month' and 'last_year' periods");
         }
-        return new PublicStatsDTO.PublicStatsResponse(summary, graphData);
     }
 
     private PublicStatsDTO.PublicStatsResponse getWasteStats(LocalDate startDate, LocalDate endDate, String period) {

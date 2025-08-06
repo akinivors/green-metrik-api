@@ -5,6 +5,7 @@ import com.greenmetrik.greenmetrikapi.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -21,123 +22,120 @@ public class DataInitializer implements CommandLineRunner {
     private final UnitRepository unitRepository;
     private final PasswordEncoder passwordEncoder;
     private final CampusMetricsRepository campusMetricsRepository;
-    private final WasteDataRepository wasteDataRepository;
+    private final ActivityLogRepository activityLogRepository;
     private final ElectricityConsumptionRepository electricityRepository;
     private final WaterConsumptionRepository waterRepository;
+    private final WasteDataRepository wasteDataRepository;
     private final VehicleEntryRepository vehicleEntryRepository;
 
-    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, CampusMetricsRepository campusMetricsRepository, WasteDataRepository wasteDataRepository, ElectricityConsumptionRepository electricityRepository, WaterConsumptionRepository waterRepository, VehicleEntryRepository vehicleEntryRepository) {
+    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, CampusMetricsRepository campusMetricsRepository, ActivityLogRepository activityLogRepository, ElectricityConsumptionRepository electricityRepository, WaterConsumptionRepository waterRepository, WasteDataRepository wasteDataRepository, VehicleEntryRepository vehicleEntryRepository) {
         this.userRepository = userRepository;
         this.unitRepository = unitRepository;
         this.passwordEncoder = passwordEncoder;
         this.campusMetricsRepository = campusMetricsRepository;
-        this.wasteDataRepository = wasteDataRepository;
+        this.activityLogRepository = activityLogRepository;
         this.electricityRepository = electricityRepository;
         this.waterRepository = waterRepository;
+        this.wasteDataRepository = wasteDataRepository;
         this.vehicleEntryRepository = vehicleEntryRepository;
     }
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
-        // Clear all data
-        campusMetricsRepository.deleteAllInBatch();
-        wasteDataRepository.deleteAllInBatch();
-        electricityRepository.deleteAllInBatch();
-        waterRepository.deleteAllInBatch();
-        vehicleEntryRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-        unitRepository.deleteAllInBatch();
+        // This check from your coworker makes the seeder non-destructive.
+        if (unitRepository.count() == 0 && userRepository.count() == 0) {
+            System.out.println("Database is empty. Initializing with sample data...");
 
-        // 1. Create units
-        Unit genelSekreterlik = new Unit();
-        genelSekreterlik.setName("Genel Sekreterlik");
-        Unit yemekhaneUnit = new Unit();
-        yemekhaneUnit.setName("Yemekhane");
-        Unit muhendislikFakultesi = new Unit();
-        muhendislikFakultesi.setName("Mühendislik Fakültesi");
-        Unit guvenlikUnit = new Unit();
-        guvenlikUnit.setName("Güvenlik Birimi");
-        unitRepository.saveAll(List.of(genelSekreterlik, yemekhaneUnit, muhendislikFakultesi, guvenlikUnit));
+            // 1. Create units
+            Unit genelSekreterlik = new Unit();
+            genelSekreterlik.setName("Genel Sekreterlik");
 
-        // 2. Create users
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setFullName("Administrator");
-        admin.setRole(Role.ADMIN);
-        admin.setUnit(genelSekreterlik);
-        admin.setTemporaryPassword(false);
+            Unit yemekhaneUnit = new Unit();
+            yemekhaneUnit.setName("Yemekhane");
 
-        User yemekhaneUser = new User();
-        yemekhaneUser.setUsername("yemekhane");
-        yemekhaneUser.setPassword(passwordEncoder.encode("yemekhane123"));
-        yemekhaneUser.setFullName("Yemekhane Staff");
-        yemekhaneUser.setRole(Role.YEMEKHANE);
-        yemekhaneUser.setUnit(yemekhaneUnit);
-        yemekhaneUser.setTemporaryPassword(false);
+            Unit muhendislikFakultesi = new Unit();
+            muhendislikFakultesi.setName("Mühendislik Fakültesi");
 
-        User binaGorevlisi = new User();
-        binaGorevlisi.setUsername("bina_gorevlisi");
-        binaGorevlisi.setPassword(passwordEncoder.encode("bina123"));
-        binaGorevlisi.setFullName("Bina Görevlisi");
-        binaGorevlisi.setRole(Role.BINA_GOREVLISI);
-        binaGorevlisi.setUnit(muhendislikFakultesi);
-        binaGorevlisi.setTemporaryPassword(false);
+            Unit guvenlikUnit = new Unit();
+            guvenlikUnit.setName("Güvenlik Birimi");
 
-        User guvenlikUser = new User();
-        guvenlikUser.setUsername("guvenlik");
-        guvenlikUser.setPassword(passwordEncoder.encode("guvenlik123"));
-        guvenlikUser.setFullName("Güvenlik Personeli");
-        guvenlikUser.setRole(Role.GUVENLIK);
-        guvenlikUser.setUnit(guvenlikUnit);
-        guvenlikUser.setTemporaryPassword(false);
-        userRepository.saveAll(List.of(admin, yemekhaneUser, binaGorevlisi, guvenlikUser));
+            unitRepository.saveAll(List.of(genelSekreterlik, yemekhaneUnit, muhendislikFakultesi, guvenlikUnit));
 
-        // 3. Create static metrics
-        createAllSampleMetrics();
+            // 2. Create users
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setFullName("Administrator");
+            admin.setRole(Role.ADMIN);
+            admin.setUnit(genelSekreterlik);
+            admin.setTemporaryPassword(false);
 
-        // 4. Create dynamic sample waste data
-        createSampleWasteData(yemekhaneUser);
+            User yemekhaneUser = new User();
+            yemekhaneUser.setUsername("yemekhane");
+            yemekhaneUser.setPassword(passwordEncoder.encode("yemekhane123"));
+            yemekhaneUser.setFullName("Yemekhane Staff");
+            yemekhaneUser.setRole(Role.YEMEKHANE);
+            yemekhaneUser.setUnit(yemekhaneUnit);
+            yemekhaneUser.setTemporaryPassword(false);
 
-        // 5. Create dynamic sample consumption data
-        createSampleConsumptionData(binaGorevlisi, muhendislikFakultesi);
+            User binaGorevlisi = new User();
+            binaGorevlisi.setUsername("bina_gorevlisi");
+            binaGorevlisi.setPassword(passwordEncoder.encode("bina123"));
+            binaGorevlisi.setFullName("Bina Görevlisi");
+            binaGorevlisi.setRole(Role.BINA_GOREVLISI);
+            binaGorevlisi.setUnit(muhendislikFakultesi);
+            binaGorevlisi.setTemporaryPassword(false);
 
-        // 6. Create dynamic sample vehicle data
-        createSampleVehicleData(guvenlikUser);
+            User guvenlikUser = new User();
+            guvenlikUser.setUsername("guvenlik");
+            guvenlikUser.setPassword(passwordEncoder.encode("guvenlik123"));
+            guvenlikUser.setFullName("Güvenlik Personeli");
+            guvenlikUser.setRole(Role.GUVENLIK);
+            guvenlikUser.setUnit(guvenlikUnit);
+            guvenlikUser.setTemporaryPassword(false);
+            userRepository.saveAll(List.of(admin, yemekhaneUser, binaGorevlisi, guvenlikUser));
 
-        System.out.println("Database has been re-initialized with all sample data.");
+            // 3. Create static metrics
+            createAllSampleMetrics();
+
+            // 4. Create dynamic sample waste data
+            createSampleWasteData(yemekhaneUser);
+
+            // 5. Create dynamic sample consumption data
+            createSampleConsumptionData(binaGorevlisi, muhendislikFakultesi);
+
+            // 6. Create dynamic sample vehicle data
+            createSampleVehicleData(guvenlikUser);
+
+            System.out.println("Database has been initialized with all sample data.");
+        }
     }
 
-    // ** THIS IS THE CORRECTED METHOD **
     private void createAllSampleMetrics() {
         List<CampusMetrics> metricsToSave = new ArrayList<>();
         LocalDate sampleDate = LocalDate.of(2024, 1, 1);
 
-        // Helper function to process a single category class
         TriConsumer<Class<?>, MetricCategory, List<CampusMetrics>> processCategory =
-            (categoryClass, categoryEnum, list) -> {
-                Arrays.stream(categoryClass.getFields())
-                    .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
-                    .forEach(field -> {
-                        try {
-                            MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
-                            CampusMetrics metric = new CampusMetrics();
-                            metric.setMetricKey(keyInfo.key());
-                            metric.setMetricDate(sampleDate);
-                            metric.setDescription("Sample data for " + keyInfo.key());
-                            metric.setCategory(categoryEnum); // <-- CORRECTLY ASSIGNED CATEGORY
+                (categoryClass, categoryEnum, list) -> {
+                    Arrays.stream(categoryClass.getFields())
+                            .filter(field -> field.getType().equals(MetricKeys.MetricKey.class))
+                            .forEach(field -> {
+                                try {
+                                    MetricKeys.MetricKey keyInfo = (MetricKeys.MetricKey) field.get(null);
+                                    CampusMetrics metric = new CampusMetrics();
+                                    metric.setMetricKey(keyInfo.key());
+                                    metric.setMetricDate(sampleDate);
+                                    metric.setDescription("Sample data for " + keyInfo.key());
+                                    metric.setCategory(categoryEnum);
+                                    metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
+                                    list.add(metric);
+                                } catch (IllegalAccessException e) {
+                                    throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
+                                }
+                            });
+                };
 
-                            // Add realistic default values here
-                            metric.setMetricValue(getRealisticValueForKey(keyInfo.key()));
-
-                            list.add(metric);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException("Could not access metric key field: " + field.getName(), e);
-                        }
-                    });
-            };
-
-        // Process each category using the helper
         processCategory.accept(MetricKeys.SettingAndInfrastructure.class, MetricCategory.SETTING_INFRASTRUCTURE, metricsToSave);
         processCategory.accept(MetricKeys.EnergyAndClimateChange.class, MetricCategory.ENERGY_CLIMATE_CHANGE, metricsToSave);
         processCategory.accept(MetricKeys.Waste.class, MetricCategory.WASTE, metricsToSave);
@@ -149,9 +147,13 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("Generated " + metricsToSave.size() + " realistic sample static campus metrics.");
     }
 
-    // Helper to provide different realistic values
     private String getRealisticValueForKey(String key) {
         switch (key) {
+            case "institution_type": return "Comprehensive";
+            case "climate_zone": return "Humid Subtropical";
+            case "campus_setting": return "Urban";
+            case "num_of_campus_sites": return "1";
+            case "ict_infrastructure_program_status": return "Implemented & Evaluated";
             case "total_campus_area_m2": return "500000";
             case "open_space_area_m2": return "350000";
             case "forest_vegetation_area_m2": return "50000";
@@ -194,7 +196,6 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    // Functional interface for the helper lambda
     @FunctionalInterface
     interface TriConsumer<A, B, C> {
         void accept(A a, B b, C c);
@@ -208,22 +209,17 @@ public class DataInitializer implements CommandLineRunner {
             WasteData wasteData = new WasteData();
             wasteData.setDataDate(date);
             wasteData.setUser(user);
-
-            // Generate realistic random data
             double organicProd = ThreadLocalRandom.current().nextDouble(150, 250);
             wasteData.setOrganicProductionKg(organicProd);
-            wasteData.setOrganicConsumptionKg(organicProd * 0.95); // 95% consumed
-            wasteData.setOrganicTreatedKg(organicProd * 0.9);    // 90% treated
-
+            wasteData.setOrganicConsumptionKg(organicProd * 0.95);
+            wasteData.setOrganicTreatedKg(organicProd * 0.9);
             double inorganicProd = ThreadLocalRandom.current().nextDouble(80, 120);
             wasteData.setInorganicProductionKg(inorganicProd);
-            wasteData.setInorganicConsumptionKg(0); // Not applicable
-            wasteData.setInorganicRecycledKg(inorganicProd * 0.7); // 70% recycled
-
+            wasteData.setInorganicConsumptionKg(inorganicProd * 0.85);
+            wasteData.setInorganicRecycledKg(inorganicProd * 0.7);
             wasteData.setToxicWasteKg(ThreadLocalRandom.current().nextDouble(1, 5));
             wasteData.setTreatedToxicWasteKg(ThreadLocalRandom.current().nextDouble(0, 1));
             wasteData.setSewageDisposalLiters(ThreadLocalRandom.current().nextDouble(1000, 2000));
-
             wasteEntries.add(wasteData);
         }
         wasteDataRepository.saveAll(wasteEntries);
@@ -234,12 +230,9 @@ public class DataInitializer implements CommandLineRunner {
         List<ElectricityConsumption> electricityEntries = new ArrayList<>();
         List<WaterConsumption> waterEntries = new ArrayList<>();
         LocalDate today = LocalDate.now();
-
-        for (int i = 0; i < 12; i++) { // Create 12 months of data
+        for (int i = 0; i < 12; i++) {
             LocalDate endDate = today.minusMonths(i);
             LocalDate startDate = endDate.withDayOfMonth(1);
-
-            // Create Electricity Entry
             ElectricityConsumption elec = new ElectricityConsumption();
             elec.setPeriodStartDate(startDate);
             elec.setPeriodEndDate(endDate);
@@ -247,14 +240,12 @@ public class DataInitializer implements CommandLineRunner {
             elec.setUnit(unit);
             elec.setUser(user);
             electricityEntries.add(elec);
-
-            // Create Water Entry
             WaterConsumption water = new WaterConsumption();
             water.setPeriodStartDate(startDate);
             water.setPeriodEndDate(endDate);
             water.setConsumptionTon(ThreadLocalRandom.current().nextDouble(4000, 5000));
-            water.setRecycledWaterUsageLiters(water.getConsumptionTon() * 100); // 10% recycled
-            water.setTreatedWaterConsumptionLiters(water.getConsumptionTon() * 250); // 25% treated
+            water.setRecycledWaterUsageLiters(water.getConsumptionTon() * 100);
+            water.setTreatedWaterConsumptionLiters(water.getConsumptionTon() * 250);
             water.setUnit(unit);
             water.setUser(user);
             waterEntries.add(water);
@@ -272,12 +263,10 @@ public class DataInitializer implements CommandLineRunner {
             VehicleEntry entry = new VehicleEntry();
             entry.setEntryDate(date);
             entry.setUser(user);
-
             entry.setPublicTransportCount(ThreadLocalRandom.current().nextInt(100, 151));
             entry.setPrivateVehicleCount(ThreadLocalRandom.current().nextInt(700, 1001));
             entry.setMotorcycleCount(ThreadLocalRandom.current().nextInt(200, 301));
             entry.setZevCount(ThreadLocalRandom.current().nextInt(20, 51));
-
             vehicleEntries.add(entry);
         }
         vehicleEntryRepository.saveAll(vehicleEntries);

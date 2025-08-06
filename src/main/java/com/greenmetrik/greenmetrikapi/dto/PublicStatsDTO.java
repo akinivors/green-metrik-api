@@ -9,7 +9,21 @@ public class PublicStatsDTO {
 
     // DTOs for Summary data
     public record ConsumptionSummary(Double totalElectricityKwh, Double totalWaterTon) {}
-    public record WasteSummary(Double totalOrganicWasteKg, Double totalInorganicWasteKg, Double totalToxicWasteKg) {}
+    public record WasteSummary(
+        // Organic waste details
+        Double totalOrganicProductionKg,
+        Double totalOrganicConsumptionKg,
+        Double totalOrganicTreatedKg,
+        // Inorganic waste details
+        Double totalInorganicProductionKg,
+        Double totalInorganicConsumptionKg,
+        Double totalInorganicRecycledKg,
+        // Toxic waste details
+        Double totalToxicWasteKg,
+        Double totalTreatedToxicWasteKg,
+        // Additional metrics
+        Double totalSewageDisposalLiters
+    ) {}
     public record VehicleSummary(Long totalPublicTransport, Long totalPrivateVehicle, Long totalMotorcycle, Long totalZev) {}
 
     // DTOs for Graph data points

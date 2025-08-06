@@ -10,16 +10,18 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
 public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Long>, JpaSpecificationExecutor<CampusMetrics> {
 
-    // ** THIS METHOD IS UPDATED **
+    // This is your more robust query for the public dashboards
     @Query("SELECT cm FROM CampusMetrics cm WHERE cm.metricKey = :metricKey ORDER BY cm.id DESC LIMIT 1")
     Optional<CampusMetrics> findByMetricKey(@Param("metricKey") String metricKey);
 
-    // ** Powerful native query with filtering and pagination **
+    // This is also your more robust query, which the admin service will now use
     @Query(
         value = "SELECT cm.* FROM campus_metrics cm " +
                 "INNER JOIN (" +
@@ -39,4 +41,8 @@ public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Lo
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
+
+    // This is your coworker's new feature for a future admin panel
+    @Query("SELECT cm.metricKey as metricKey, MAX(cm.metricDate) as maxDate FROM CampusMetrics cm GROUP BY cm.metricKey")
+    List<Map<String, Object>> findLatestMetricDates();
 }

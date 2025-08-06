@@ -1,6 +1,7 @@
 package com.greenmetrik.greenmetrikapi.service;
 
 import com.greenmetrik.greenmetrikapi.dto.GreenMetricDTO;
+import com.greenmetrik.greenmetrikapi.exception.InvalidRequestException;
 import com.greenmetrik.greenmetrikapi.model.CampusMetrics;
 import com.greenmetrik.greenmetrikapi.model.ElectricityConsumption;
 import com.greenmetrik.greenmetrikapi.model.MetricKeys;
@@ -22,6 +23,13 @@ public class GreenMetricService {
     }
 
     public GreenMetricDTO.SettingAndInfrastructureStats calculateSettingAndInfrastructureStats() {
+        // Fetch new raw profile metrics
+        String institutionType = getMetricValueAsString(MetricKeys.SettingAndInfrastructure.INSTITUTION_TYPE.key());
+        String climateZone = getMetricValueAsString(MetricKeys.SettingAndInfrastructure.CLIMATE_ZONE.key());
+        String campusSetting = getMetricValueAsString(MetricKeys.SettingAndInfrastructure.CAMPUS_SETTING.key());
+        Integer numOfCampusSites = getMetricValueAsInteger(MetricKeys.SettingAndInfrastructure.NUM_OF_CAMPUS_SITES.key());
+
+        // Fetch existing raw metrics for calculations
         double totalArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_CAMPUS_AREA_M2.key());
         double openSpaceArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.OPEN_SPACE_AREA_M2.key());
         double forestArea = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.FOREST_VEGETATION_AREA_M2.key());
@@ -33,6 +41,7 @@ public class GreenMetricService {
         double totalBudget = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_UNIVERSITY_BUDGET.key());
         double sustainabilityBudget = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.SUSTAINABILITY_BUDGET.key());
 
+        // Perform calculations
         Double openSpaceRatio = (totalArea > 0) ? (openSpaceArea / totalArea) * 100 : 0.0;
         Double forestRatio = (totalArea > 0) ? (forestArea / totalArea) * 100 : 0.0;
         Double plantedRatio = (totalArea > 0) ? (plantedArea / totalArea) * 100 : 0.0;
@@ -40,27 +49,59 @@ public class GreenMetricService {
         Double campusPopulation = totalStudents + academicStaff + adminStaff;
         Double sustainabilityBudgetPercentage = (totalBudget > 0) ? (sustainabilityBudget / totalBudget) * 100 : 0.0;
 
+        // Return the complete DTO with all fields
         return new GreenMetricDTO.SettingAndInfrastructureStats(
+            institutionType, climateZone, campusSetting, numOfCampusSites,
             openSpaceRatio, forestRatio, plantedRatio, absorptionRatio, campusPopulation, sustainabilityBudgetPercentage
         );
     }
 
     public GreenMetricDTO.EnergyAndClimateChangeStats calculateEnergyAndClimateChangeStats() {
+        // Fetch static raw values
         double energyEfficientAppliances = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.ENERGY_EFFICIENT_APPLIANCES.key());
         double renewableEnergyProduction = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.TOTAL_RENEWABLE_ENERGY_PRODUCTION_KWH.key());
         double totalCarbonFootprint = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.TOTAL_CARBON_FOOTPRINT_TONS.key());
+        double smartBuildingArea = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.SMART_BUILDING_AREA_M2.key());
+        double totalBuildingArea = getMetricValueAsDouble(MetricKeys.EnergyAndClimateChange.TOTAL_BUILDING_AREA_M2.key());
+
+        // Fetch dynamic consumption data
         double totalEnergyConsumption = getTotalElectricityConsumption();
+
+        // Fetch population for per-person calculation
         double totalStudents = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_STUDENTS.key());
         double academicStaff = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_ACADEMIC_STAFF.key());
         double adminStaff = getMetricValueAsDouble(MetricKeys.SettingAndInfrastructure.TOTAL_ADMINISTRATIVE_STAFF.key());
         double campusPopulation = totalStudents + academicStaff + adminStaff;
 
-        Double renewableEnergyProductionRatio = (totalEnergyConsumption > 0) ? (renewableEnergyProduction / totalEnergyConsumption) * 100 : 0.0;
-        Double carbonFootprintPerPerson = (campusPopulation > 0) ? (totalCarbonFootprint / campusPopulation) : 0.0;
+        // --- Perform All Calculations ---
+        Double energyEfficientAppliancesUsage = energyEfficientAppliances;
 
+        Double renewableEnergyProductionRatio = (totalEnergyConsumption > 0)
+            ? (renewableEnergyProduction / totalEnergyConsumption) * 100
+            : 0.0;
+
+        Double carbonFootprintPerPerson = (campusPopulation > 0)
+            ? (totalCarbonFootprint / campusPopulation)
+            : 0.0;
+
+        // NEW CALCULATION
+        Double smartBuildingRatio = (totalBuildingArea > 0)
+            ? (smartBuildingArea / totalBuildingArea) * 100
+            : 0.0;
+
+        // Return the complete DTO with all four fields
         return new GreenMetricDTO.EnergyAndClimateChangeStats(
-            energyEfficientAppliances, renewableEnergyProductionRatio, carbonFootprintPerPerson
+            energyEfficientAppliancesUsage,
+            renewableEnergyProductionRatio,
+            carbonFootprintPerPerson,
+            smartBuildingRatio
         );
+    }
+
+    public GreenMetricDTO.WasteStats calculateWasteStats() {
+        Integer programs = getMetricValueAsInteger(MetricKeys.Waste.PAPER_PLASTIC_REDUCTION_PROGRAMS_COUNT.key());
+
+        return new GreenMetricDTO.WasteStats(programs);
     }
 
     public GreenMetricDTO.WaterStats calculateWaterStats() {
@@ -107,11 +148,12 @@ public class GreenMetricService {
     public GreenMetricDTO calculateAllGreenMetricStats() {
         GreenMetricDTO.SettingAndInfrastructureStats siStats = calculateSettingAndInfrastructureStats();
         GreenMetricDTO.EnergyAndClimateChangeStats ecStats = calculateEnergyAndClimateChangeStats();
+        GreenMetricDTO.WasteStats wasteStats = calculateWasteStats();
         GreenMetricDTO.WaterStats waterStats = calculateWaterStats();
         GreenMetricDTO.TransportationStats trStats = calculateTransportationStats();
         GreenMetricDTO.EducationAndResearchStats edStats = calculateEducationAndResearchStats();
 
-        return new GreenMetricDTO(siStats, ecStats, waterStats, trStats, edStats);
+        return new GreenMetricDTO(siStats, ecStats, wasteStats, waterStats, trStats, edStats);
     }
 
     private double getTotalElectricityConsumption() {
@@ -120,17 +162,30 @@ public class GreenMetricService {
                 .sum();
     }
 
+    // --- Using Coworker's More Robust Helper Methods ---
     private double getMetricValueAsDouble(String metricKey) {
-        return campusMetricsRepository.findByMetricKey(metricKey)
-                .map(CampusMetrics::getMetricValue)
-                .map(Double::parseDouble)
-                .orElse(0.0);
+        Optional<CampusMetrics> metricOpt = campusMetricsRepository.findByMetricKey(metricKey);
+        if (metricOpt.isEmpty()) return 0.0;
+        try {
+            return Double.parseDouble(metricOpt.get().getMetricValue());
+        } catch (NumberFormatException e) {
+            throw new InvalidRequestException("The metric value for '" + metricKey + "' is not a valid number.");
+        }
     }
 
     private int getMetricValueAsInteger(String metricKey) {
+        Optional<CampusMetrics> metricOpt = campusMetricsRepository.findByMetricKey(metricKey);
+        if (metricOpt.isEmpty()) return 0;
+        try {
+            return Integer.parseInt(metricOpt.get().getMetricValue());
+        } catch (NumberFormatException e) {
+            throw new InvalidRequestException("The metric value for '" + metricKey + "' is not a valid integer.");
+        }
+    }
+
+    private String getMetricValueAsString(String metricKey) {
         return campusMetricsRepository.findByMetricKey(metricKey)
                 .map(CampusMetrics::getMetricValue)
-                .map(Integer::parseInt)
-                .orElse(0);
+                .orElse("");
     }
 }

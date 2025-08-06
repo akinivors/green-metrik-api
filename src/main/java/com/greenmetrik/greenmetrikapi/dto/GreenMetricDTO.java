@@ -6,12 +6,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record GreenMetricDTO(
     SettingAndInfrastructureStats settingAndInfrastructure,
     EnergyAndClimateChangeStats energyAndClimateChange,
+    WasteStats waste,
     WaterStats water,
     TransportationStats transportation,
     EducationAndResearchStats educationAndResearch
 ) {
 
     public record SettingAndInfrastructureStats(
+        // Campus Profile Data
+        String institutionType,
+        String climateZone,
+        String campusSetting,
+        Integer numOfCampusSites,
+        // Calculated Metrics
         Double openSpaceToTotalAreaRatio,
         Double forestVegetationToTotalAreaRatio,
         Double plantedVegetationToTotalAreaRatio,
@@ -23,7 +30,13 @@ public record GreenMetricDTO(
     public record EnergyAndClimateChangeStats(
         Double energyEfficientAppliancesUsage,
         Double renewableEnergyProductionRatio,
-        Double carbonFootprintPerPerson
+        Double carbonFootprintPerPerson,
+        Double smartBuildingRatio
+    ) {}
+
+    public record WasteStats(
+        // Placeholder for future development
+        Integer paperAndPlasticReductionPrograms
     ) {}
 
     public record WaterStats(

@@ -2,20 +2,16 @@ package com.greenmetrik.greenmetrikapi.service;
 
 import com.greenmetrik.greenmetrikapi.dto.CampusMetricsRequest;
 import com.greenmetrik.greenmetrikapi.dto.CampusMetricsResponse;
+import com.greenmetrik.greenmetrikapi.exception.InvalidRequestException;
 import com.greenmetrik.greenmetrikapi.model.CampusMetrics;
 import com.greenmetrik.greenmetrikapi.model.MetricCategory;
-import com.greenmetrik.greenmetrikapi.model.MetricKeys; // Import MetricKeys
+import com.greenmetrik.greenmetrikapi.model.MetricKeys;
 import com.greenmetrik.greenmetrikapi.repository.CampusMetricsRepository;
-import com.greenmetrik.greenmetrikapi.specifications.CampusMetricsSpecification;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CampusMetricsService {
@@ -26,35 +22,55 @@ public class CampusMetricsService {
         this.campusMetricsRepository = campusMetricsRepository;
     }
 
-    // ** UPDATED METHOD **
     public CampusMetricsResponse addMetric(CampusMetricsRequest request) {
-        // Validate the incoming metric key
+        // Step 1: Find the metric key to get its properties (like dataType)
         MetricKeys.MetricKey metricKeyInfo = MetricKeys.findByKey(request.metricKey());
 
+        // Step 2: Validate the metric value based on its expected data type
+        validateMetricValue(metricKeyInfo, request.metricValue());
+
         CampusMetrics metric = new CampusMetrics();
-        metric.setMetricKey(metricKeyInfo.key()); // Use the validated key
+        metric.setMetricKey(metricKeyInfo.key());
         metric.setMetricValue(request.metricValue());
         metric.setCategory(MetricCategory.valueOf(request.category().toUpperCase()));
         metric.setMetricDate(request.metricDate());
         metric.setDescription(request.description());
 
         CampusMetrics savedMetric = campusMetricsRepository.save(metric);
+
+        // Use our project's robust fromEntity method
         return CampusMetricsResponse.fromEntity(savedMetric);
     }
 
-    // ** REPLACED METHOD **
     public Page<CampusMetricsResponse> getAllMetrics(Pageable pageable, MetricCategory category, LocalDate startDate, LocalDate endDate) {
-        // Convert category enum to string for the native query
         String categoryName = (category != null) ? category.name() : null;
 
-        // Call the new, powerful repository method
         Page<CampusMetrics> metricsPage = campusMetricsRepository.findLatestFiltered(pageable, categoryName, startDate, endDate);
 
-        // Map the results to the response DTO
+        // Map the paged entities to DTOs using our robust fromEntity method
         return metricsPage.map(CampusMetricsResponse::fromEntity);
     }
 
     public void deleteMetric(Long id) {
         campusMetricsRepository.deleteById(id);
+    }
+
+    // This is the new, robust validation method from your coworker
+    private void validateMetricValue(MetricKeys.MetricKey keyInfo, String value) {
+        try {
+            switch (keyInfo.dataType()) {
+                case "NUMBER":
+                    Double.parseDouble(value);
+                    break;
+                case "INTEGER":
+                    Integer.parseInt(value);
+                    break;
+                // "STRING" requires no validation, so no case is needed.
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidRequestException(
+                    "Invalid value for metric '" + keyInfo.key() + "'. Expected a " + keyInfo.dataType().toLowerCase() + "."
+            );
+        }
     }
 }
