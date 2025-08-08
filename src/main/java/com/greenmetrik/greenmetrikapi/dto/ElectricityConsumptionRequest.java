@@ -1,9 +1,11 @@
 package com.greenmetrik.greenmetrikapi.dto;
 
+import com.greenmetrik.greenmetrikapi.validator.EndDateAfterStartDate;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 
+@EndDateAfterStartDate(message = "Period end date cannot be before the start date.")
 public record ElectricityConsumptionRequest(
     @NotNull(message = "Period start date cannot be null")
     LocalDate periodStartDate,
