@@ -26,7 +26,7 @@ public class ActivityLogResponse {
             log.getTimestamp().format(formatter),
             log.getEventType(),
             log.getDescription(),
-            log.getUser().getUsername()
+            log.getUsername() // Use the safe, permanent username field
         );
     }
 

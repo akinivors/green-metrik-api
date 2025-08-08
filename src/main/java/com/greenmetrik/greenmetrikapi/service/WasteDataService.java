@@ -9,7 +9,9 @@ import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WasteDataRepository;
 import com.greenmetrik.greenmetrikapi.specifications.WasteDataSpecification;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -52,11 +54,19 @@ public class WasteDataService {
     }
 
     public Page<WasteDataResponse> getAllWasteData(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        // NEW: Create a new Pageable with our desired sorting
+        Pageable sortedPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("dataDate").descending()
+        );
+
         Specification<WasteData> spec = Specification
                 .where(WasteDataSpecification.hasDataDateAfter(startDate))
                 .and(WasteDataSpecification.hasDataDateBefore(endDate));
 
-        Page<WasteData> dataPage = wasteDataRepository.findAll(spec, pageable);
+        // Use the new sortedPageable object in the repository call
+        Page<WasteData> dataPage = wasteDataRepository.findAll(spec, sortedPageable);
         return dataPage.map(WasteDataResponse::fromEntity);
     }
 

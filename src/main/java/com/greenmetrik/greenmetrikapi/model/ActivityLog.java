@@ -2,6 +2,8 @@ package com.greenmetrik.greenmetrikapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,8 +24,12 @@ public class ActivityLog {
     @Column(nullable = false)
     private String description; // e.g., "Admin deleted user 'testuser'."
 
+    @Column(nullable = false, updatable = false)
+    private String username; // NEW FIELD to store the username snapshot
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true) // CHANGE: nullable = true
+    @OnDelete(action = OnDeleteAction.SET_NULL) // NEW: Set user to null on delete
     private User user; // The user who performed the action
 
     @PrePersist

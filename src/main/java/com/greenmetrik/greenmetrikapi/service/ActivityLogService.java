@@ -25,6 +25,7 @@ public class ActivityLogService {
         log.setEventType(eventType);
         log.setDescription(description);
         log.setUser(user);
+        log.setUsername(user.getUsername()); // NEW: Set the username snapshot
         activityLogRepository.save(log);
     }
 

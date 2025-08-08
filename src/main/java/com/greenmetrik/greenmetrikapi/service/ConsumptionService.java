@@ -16,7 +16,9 @@ import com.greenmetrik.greenmetrikapi.repository.WaterConsumptionRepository;
 import com.greenmetrik.greenmetrikapi.specifications.ElectricityConsumptionSpecification;
 import com.greenmetrik.greenmetrikapi.specifications.WaterConsumptionSpecification;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -82,24 +84,38 @@ public class ConsumptionService {
     public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
             Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
 
+        // NEW: Create a new Pageable with our desired sorting
+        Pageable sortedPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("periodEndDate").descending()
+        );
+
         Specification<ElectricityConsumption> spec = Specification
                 .where(ElectricityConsumptionSpecification.hasUnitId(unitId))
                 .and(ElectricityConsumptionSpecification.hasPeriodStartDateAfter(startDate))
                 .and(ElectricityConsumptionSpecification.hasPeriodEndDateBefore(endDate));
 
-        Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(spec, pageable);
+        Page<ElectricityConsumption> consumptionPage = electricityRepository.findAll(spec, sortedPageable);
         return consumptionPage.map(ElectricityConsumptionResponse::fromEntity);
     }
 
     public Page<WaterConsumptionResponse> getAllWaterConsumption(
             Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
 
+        // NEW: Create a new Pageable with our desired sorting
+        Pageable sortedPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("periodEndDate").descending()
+        );
+
         Specification<WaterConsumption> spec = Specification
                 .where(WaterConsumptionSpecification.hasUnitId(unitId))
                 .and(WaterConsumptionSpecification.hasPeriodStartDateAfter(startDate))
                 .and(WaterConsumptionSpecification.hasPeriodEndDateBefore(endDate));
 
-        Page<WaterConsumption> consumptionPage = waterRepository.findAll(spec, pageable);
+        Page<WaterConsumption> consumptionPage = waterRepository.findAll(spec, sortedPageable);
         return consumptionPage.map(WaterConsumptionResponse::fromEntity);
     }
 

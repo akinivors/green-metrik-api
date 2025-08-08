@@ -9,7 +9,9 @@ import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.VehicleEntryRepository;
 import com.greenmetrik.greenmetrikapi.specifications.VehicleEntrySpecification;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -47,11 +49,19 @@ public class VehicleService {
     }
 
     public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable, LocalDate startDate, LocalDate endDate) {
+        // NEW: Create a new Pageable with our desired sorting
+        Pageable sortedPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("entryDate").descending()
+        );
+
         Specification<VehicleEntry> spec = Specification
                 .where(VehicleEntrySpecification.hasEntryDateAfter(startDate))
                 .and(VehicleEntrySpecification.hasEntryDateBefore(endDate));
 
-        Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(spec, pageable);
+        // Use the new sortedPageable object in the repository call
+        Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(spec, sortedPageable);
         return entryPage.map(VehicleEntryResponse::fromEntity);
     }
 

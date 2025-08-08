@@ -34,12 +34,16 @@ public class UserService {
 
     public UserResponse registerUser(UserRegistrationRequest request) {
         if (userRepository.findByUsername(request.username()).isPresent()) {
-            throw new DuplicateResourceException("Username '" + request.username() + "' already exists");
+            throw new DuplicateResourceException(
+                "Username already exists", "User", "username", request.username()
+            );
         }
         validatePassword(request.password());
 
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    "Unit not found", "Unit", request.unitId()
+                ));
 
         User newUser = new User();
         newUser.setUsername(request.username());
@@ -64,7 +68,7 @@ public class UserService {
 
     public void changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", username));
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             throw new InvalidRequestException("Invalid old password");
@@ -78,7 +82,7 @@ public class UserService {
 
     public UserResponse getMyProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", username));
         return UserResponse.fromEntity(user);
     }
 
@@ -90,9 +94,9 @@ public class UserService {
 
     public void deleteUser(Long id, String currentUsername) {
         User userToDelete = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
         User adminUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin user not found with username: " + currentUsername));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin user not found", "User", currentUsername));
 
         if (userToDelete.getUsername().equals(currentUsername)) {
             throw new InvalidRequestException("Admin users cannot delete their own accounts.");
