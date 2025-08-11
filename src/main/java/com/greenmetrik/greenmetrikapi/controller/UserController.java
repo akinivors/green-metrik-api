@@ -3,14 +3,18 @@ package com.greenmetrik.greenmetrikapi.controller;
 import com.greenmetrik.greenmetrikapi.dto.ChangePasswordRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserResponse;
+import com.greenmetrik.greenmetrikapi.dto.UserUpdateRequest;
 import com.greenmetrik.greenmetrikapi.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -31,8 +35,8 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userService.getAllUsers(pageable);
     }
 
     @PostMapping("/change-password")
@@ -45,6 +49,25 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public UserResponse getMyProfile(Principal principal) {
         return userService.getMyProfile(principal.getName());
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest request) {
+        return userService.updateUser(id, request);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, String> resetPassword(@PathVariable Long id, Principal principal) {
+        String temporaryPassword = userService.resetPassword(id, principal.getName());
+        return Map.of("temporaryPassword", temporaryPassword);
     }
 
     @DeleteMapping("/{id}")

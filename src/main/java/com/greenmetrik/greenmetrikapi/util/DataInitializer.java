@@ -2,6 +2,7 @@ package com.greenmetrik.greenmetrikapi.util;
 
 import com.greenmetrik.greenmetrikapi.model.*;
 import com.greenmetrik.greenmetrikapi.repository.*;
+import com.greenmetrik.greenmetrikapi.service.ActivityLogService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,9 @@ public class DataInitializer implements CommandLineRunner {
     private final WaterConsumptionRepository waterRepository;
     private final WasteDataRepository wasteDataRepository;
     private final VehicleEntryRepository vehicleEntryRepository;
+    private final ActivityLogService activityLogService;
 
-    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, CampusMetricsRepository campusMetricsRepository, ActivityLogRepository activityLogRepository, ElectricityConsumptionRepository electricityRepository, WaterConsumptionRepository waterRepository, WasteDataRepository wasteDataRepository, VehicleEntryRepository vehicleEntryRepository) {
+    public DataInitializer(UserRepository userRepository, UnitRepository unitRepository, PasswordEncoder passwordEncoder, CampusMetricsRepository campusMetricsRepository, ActivityLogRepository activityLogRepository, ElectricityConsumptionRepository electricityRepository, WaterConsumptionRepository waterRepository, WasteDataRepository wasteDataRepository, VehicleEntryRepository vehicleEntryRepository, ActivityLogService activityLogService) {
         this.userRepository = userRepository;
         this.unitRepository = unitRepository;
         this.passwordEncoder = passwordEncoder;
@@ -38,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
         this.waterRepository = waterRepository;
         this.wasteDataRepository = wasteDataRepository;
         this.vehicleEntryRepository = vehicleEntryRepository;
+        this.activityLogService = activityLogService;
     }
 
     @Override
@@ -224,6 +227,15 @@ public class DataInitializer implements CommandLineRunner {
         }
         wasteDataRepository.saveAll(wasteEntries);
         System.out.println("Generated " + wasteEntries.size() + " sample waste data entries.");
+
+        // NEW: Add activity logging for each created entry
+        for (WasteData wasteData : wasteEntries) {
+            activityLogService.logActivity(
+                "WASTE_DATA_CREATED",
+                "Sample waste data created for date: " + wasteData.getDataDate(),
+                user
+            );
+        }
     }
 
     private void createSampleConsumptionData(User user, Unit unit) {
@@ -253,6 +265,22 @@ public class DataInitializer implements CommandLineRunner {
         electricityRepository.saveAll(electricityEntries);
         waterRepository.saveAll(waterEntries);
         System.out.println("Generated " + electricityEntries.size() + " sample electricity and water entries.");
+
+        // NEW: Add activity logging for each created entry
+        for (ElectricityConsumption elec : electricityEntries) {
+            activityLogService.logActivity(
+                "ELECTRICITY_LOG_CREATED",
+                "Sample electricity consumption log created for unit: " + unit.getName(),
+                user
+            );
+        }
+        for (WaterConsumption water : waterEntries) {
+            activityLogService.logActivity(
+                "WATER_LOG_CREATED",
+                "Sample water consumption log created for unit: " + unit.getName(),
+                user
+            );
+        }
     }
 
     private void createSampleVehicleData(User user) {
@@ -271,5 +299,14 @@ public class DataInitializer implements CommandLineRunner {
         }
         vehicleEntryRepository.saveAll(vehicleEntries);
         System.out.println("Generated " + vehicleEntries.size() + " sample vehicle data entries.");
+
+        // NEW: Add activity logging for each created entry
+        for (VehicleEntry entry : vehicleEntries) {
+            activityLogService.logActivity(
+                "VEHICLE_ENTRY_CREATED",
+                "Sample vehicle entry created for date: " + entry.getEntryDate(),
+                user
+            );
+        }
     }
 }

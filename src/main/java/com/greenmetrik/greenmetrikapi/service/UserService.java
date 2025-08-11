@@ -3,6 +3,7 @@ package com.greenmetrik.greenmetrikapi.service;
 import com.greenmetrik.greenmetrikapi.dto.ChangePasswordRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserRegistrationRequest;
 import com.greenmetrik.greenmetrikapi.dto.UserResponse;
+import com.greenmetrik.greenmetrikapi.dto.UserUpdateRequest;
 import com.greenmetrik.greenmetrikapi.exception.DuplicateResourceException;
 import com.greenmetrik.greenmetrikapi.exception.InvalidRequestException;
 import com.greenmetrik.greenmetrikapi.exception.ResourceNotFoundException;
@@ -11,11 +12,17 @@ import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class UserService {
@@ -59,15 +66,20 @@ public class UserService {
         return UserResponse.fromEntity(savedUser);
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        // Create a sorted pageable to ensure consistent ordering (newest users first)
+        Pageable sortedPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("id").descending()
+        );
+
+        return userRepository.findAllActiveUsers(sortedPageable)
+                .map(UserResponse::fromEntity);
     }
 
     public void changePassword(String username, ChangePasswordRequest request) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findActiveByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", username));
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
@@ -81,9 +93,67 @@ public class UserService {
     }
 
     public UserResponse getMyProfile(String username) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findActiveByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", username));
         return UserResponse.fromEntity(user);
+    }
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
+        return UserResponse.fromEntity(user);
+    }
+
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        User userToUpdate = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
+
+        Unit unit = unitRepository.findById(request.unitId())
+                .orElseThrow(() -> new ResourceNotFoundException("Unit not found", "Unit", request.unitId()));
+
+        userToUpdate.setFullName(request.fullName());
+        userToUpdate.setRole(Role.valueOf(request.role().toUpperCase()));
+        userToUpdate.setUnit(unit);
+
+        User updatedUser = userRepository.save(userToUpdate);
+        activityLogService.logActivity("USER_UPDATED", "Admin updated details for user: " + updatedUser.getUsername(), updatedUser);
+
+        return UserResponse.fromEntity(updatedUser);
+    }
+
+    public String resetPassword(Long id, String adminUsername) {
+        User adminUser = userRepository.findByUsername(adminUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin user not found", "User", adminUsername));
+
+        User userToReset = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User to reset not found", "User", id));
+
+        if (userToReset.getUsername().equals(adminUsername)) {
+            throw new InvalidRequestException("Admins cannot reset their own password via this method.");
+        }
+
+        String temporaryPassword = generateSecurePassword();
+
+        userToReset.setPassword(passwordEncoder.encode(temporaryPassword));
+        userToReset.setTemporaryPassword(true);
+        userRepository.save(userToReset);
+
+        activityLogService.logActivity(
+            "USER_PASSWORD_RESET",
+            "Admin '" + adminUser.getUsername() + "' reset password for user '" + userToReset.getUsername() + "'",
+            adminUser
+        );
+
+        return temporaryPassword;
+    }
+
+    private String generateSecurePassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        return IntStream.range(0, 12)
+                .map(i -> random.nextInt(chars.length()))
+                .mapToObj(randomIndex -> String.valueOf(chars.charAt(randomIndex)))
+                .collect(Collectors.joining());
     }
 
     private void validatePassword(String password) {
@@ -93,16 +163,23 @@ public class UserService {
     }
 
     public void deleteUser(Long id, String currentUsername) {
-        User userToDelete = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
-        User adminUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin user not found", "User", currentUsername));
+        User adminUser = userRepository.findActiveByUsername(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Performing admin user not found", "User", currentUsername));
 
-        if (userToDelete.getUsername().equals(currentUsername)) {
+        User userToDeactivate = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User to delete not found", "User", id));
+
+        if (userToDeactivate.getUsername().equals(currentUsername)) {
             throw new InvalidRequestException("Admin users cannot delete their own accounts.");
         }
 
-        userRepository.deleteById(id);
-        activityLogService.logActivity("USER_DELETED", "Admin '" + adminUser.getUsername() + "' deleted user '" + userToDelete.getUsername() + "'", adminUser);
+        userToDeactivate.setDeleted(true);
+        userRepository.save(userToDeactivate);
+
+        activityLogService.logActivity(
+            "USER_DELETED",
+            "Admin '" + adminUser.getUsername() + "' deactivated user '" + userToDeactivate.getUsername() + "'",
+            adminUser
+        );
     }
 }

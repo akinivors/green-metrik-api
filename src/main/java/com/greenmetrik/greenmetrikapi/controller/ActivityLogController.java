@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,7 +22,10 @@ public class ActivityLogController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<ActivityLogResponse> getAllLogs(Pageable pageable) {
-        return activityLogService.getAllLogs(pageable);
+    public Page<ActivityLogResponse> getAllLogs(
+            Pageable pageable,
+            @RequestParam(required = false) Long userId
+    ) {
+        return activityLogService.getAllLogs(pageable, userId);
     }
 }

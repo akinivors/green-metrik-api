@@ -10,7 +10,8 @@ public record ElectricityConsumptionResponse(
     public static ElectricityConsumptionResponse fromEntity(ElectricityConsumption entity) {
         return new ElectricityConsumptionResponse(
             entity.getId(), entity.getPeriodStartDate(), entity.getPeriodEndDate(), entity.getConsumptionKwh(),
-            entity.getUnit().getId(), entity.getUnit().getName(), entity.getUser().getUsername()
+            entity.getUnit().getId(), entity.getUnit().getName(),
+            entity.getUser().getUsername()
         );
     }
 }
