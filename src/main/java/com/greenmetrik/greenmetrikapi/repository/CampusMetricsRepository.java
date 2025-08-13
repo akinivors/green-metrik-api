@@ -21,6 +21,9 @@ public interface CampusMetricsRepository extends JpaRepository<CampusMetrics, Lo
     @Query("SELECT cm FROM CampusMetrics cm WHERE cm.metricKey = :metricKey ORDER BY cm.id DESC LIMIT 1")
     Optional<CampusMetrics> findByMetricKey(@Param("metricKey") String metricKey);
 
+    // New method to find all metrics by metricKey ordered by metricDate descending, then id descending
+    Page<CampusMetrics> findByMetricKeyOrderByMetricDateDescIdDesc(String metricKey, Pageable pageable);
+
     // This is also your more robust query, which the admin service will now use
     @Query(
         value = "SELECT cm.* FROM campus_metrics cm " +

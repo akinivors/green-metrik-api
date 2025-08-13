@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDate;
 
 @RestController
@@ -26,8 +27,8 @@ public class CampusMetricsController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public CampusMetricsResponse addMetric(@Valid @RequestBody CampusMetricsRequest request) {
-        return campusMetricsService.addMetric(request);
+    public CampusMetricsResponse addMetric(@Valid @RequestBody CampusMetricsRequest request, Principal principal) {
+        return campusMetricsService.addMetric(request, principal.getName());
     }
 
     @GetMapping
@@ -40,10 +41,28 @@ public class CampusMetricsController {
         return campusMetricsService.getAllMetrics(pageable, category, startDate, endDate);
     }
 
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<CampusMetricsResponse> getMetricHistory(
+            Pageable pageable,
+            @RequestParam(required = false) MetricCategory category,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        return campusMetricsService.getMetricHistory(pageable, category, startDate, endDate);
+    }
+
+    @GetMapping("/{metricKey}/history")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<CampusMetricsResponse> getMetricHistoryByKey(
+            @PathVariable String metricKey,
+            Pageable pageable) {
+        return campusMetricsService.getMetricHistoryByKey(metricKey, pageable);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteMetric(@PathVariable Long id) {
-        campusMetricsService.deleteMetric(id);
+    public void deleteMetric(@PathVariable Long id, Principal principal) {
+        campusMetricsService.deleteMetric(id, principal.getName());
     }
 }
