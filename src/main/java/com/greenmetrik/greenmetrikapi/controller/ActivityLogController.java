@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/activity-log")
 public class ActivityLogController {
@@ -24,8 +26,13 @@ public class ActivityLogController {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<ActivityLogResponse> getAllLogs(
             Pageable pageable,
-            @RequestParam(required = false) Long userId
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) LocalDate dateAfter,
+            @RequestParam(required = false) LocalDate dateBefore,
+            @RequestParam(required = false) String actionType,
+            @RequestParam(required = false) String dataType,
+            @RequestParam(required = false) String username
     ) {
-        return activityLogService.getAllLogs(pageable, userId);
+        return activityLogService.getAllLogs(pageable, userId, dateAfter, dateBefore, actionType, dataType, username);
     }
 }

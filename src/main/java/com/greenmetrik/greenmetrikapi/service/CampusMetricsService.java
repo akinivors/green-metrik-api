@@ -59,7 +59,7 @@ public class CampusMetricsService {
                 savedMetric.getMetricKey(),
                 savedMetric.getMetricValue(),
                 savedMetric.getMetricDate());
-        activityLogService.logActivity("METRIC_CREATED", message, user);
+        activityLogService.logActivity("CREATED", "METRIC", message, user);
 
         // Use our project's robust fromEntity method
         return CampusMetricsResponse.fromEntity(savedMetric);
@@ -115,7 +115,7 @@ public class CampusMetricsService {
                 metric.getMetricKey(),
                 metric.getMetricValue(),
                 metric.getMetricDate());
-        activityLogService.logActivity("METRIC_DELETED", message, user);
+        activityLogService.logActivity("DELETED", "METRIC", message, user);
 
         campusMetricsRepository.deleteById(id);
     }

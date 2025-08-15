@@ -231,7 +231,7 @@ public class DataInitializer implements CommandLineRunner {
         // NEW: Add activity logging for each created entry
         for (WasteData wasteData : wasteEntries) {
             activityLogService.logActivity(
-                "WASTE_DATA_CREATED",
+                "CREATED", "WASTE_DATA",
                 "Sample waste data created for date: " + wasteData.getDataDate(),
                 user
             );
@@ -269,14 +269,14 @@ public class DataInitializer implements CommandLineRunner {
         // NEW: Add activity logging for each created entry
         for (ElectricityConsumption elec : electricityEntries) {
             activityLogService.logActivity(
-                "ELECTRICITY_LOG_CREATED",
+                "CREATED", "ELECTRICITY_CONSUMPTION",
                 "Sample electricity consumption log created for unit: " + unit.getName(),
                 user
             );
         }
         for (WaterConsumption water : waterEntries) {
             activityLogService.logActivity(
-                "WATER_LOG_CREATED",
+                "CREATED", "WATER_CONSUMPTION",
                 "Sample water consumption log created for unit: " + unit.getName(),
                 user
             );
@@ -303,7 +303,7 @@ public class DataInitializer implements CommandLineRunner {
         // NEW: Add activity logging for each created entry
         for (VehicleEntry entry : vehicleEntries) {
             activityLogService.logActivity(
-                "VEHICLE_ENTRY_CREATED",
+                "CREATED", "VEHICLE_ENTRY",
                 "Sample vehicle entry created for date: " + entry.getEntryDate(),
                 user
             );

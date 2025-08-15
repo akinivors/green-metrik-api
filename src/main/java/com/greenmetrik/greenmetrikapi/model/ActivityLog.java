@@ -19,7 +19,10 @@ public class ActivityLog {
     private LocalDateTime timestamp;
 
     @Column(nullable = false)
-    private String eventType; // e.g., "USER_DELETED", "WASTE_DATA_CREATED"
+    private String actionType; // e.g., "CREATE", "DELETE", "UPDATE"
+
+    @Column(nullable = false)
+    private String dataType; // e.g., "USER", "WASTE_DATA", "VEHICLE_ENTRY", "METRIC"
 
     @Column(nullable = false)
     private String description; // e.g., "Admin deleted user 'testuser'."

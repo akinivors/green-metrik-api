@@ -7,14 +7,16 @@ public class ActivityLogResponse {
 
     private final Long id;
     private final String timestamp;
-    private final String eventType;
+    private final String actionType;
+    private final String dataType;
     private final String description;
     private final String username;
 
-    public ActivityLogResponse(Long id, String timestamp, String eventType, String description, String username) {
+    public ActivityLogResponse(Long id, String timestamp, String actionType, String dataType, String description, String username) {
         this.id = id;
         this.timestamp = timestamp;
-        this.eventType = eventType;
+        this.actionType = actionType;
+        this.dataType = dataType;
         this.description = description;
         this.username = username;
     }
@@ -24,7 +26,8 @@ public class ActivityLogResponse {
         return new ActivityLogResponse(
             log.getId(),
             log.getTimestamp().format(formatter),
-            log.getEventType(),
+            log.getActionType(),
+            log.getDataType(),
             log.getDescription(),
             log.getUsername() // Use the safe, permanent username field
         );
@@ -33,7 +36,8 @@ public class ActivityLogResponse {
     // Standard Getters for JasperReports
     public Long getId() { return id; }
     public String getTimestamp() { return timestamp; }
-    public String getEventType() { return eventType; }
+    public String getActionType() { return actionType; }
+    public String getDataType() { return dataType; }
     public String getDescription() { return description; }
     public String getUsername() { return username; }
 }

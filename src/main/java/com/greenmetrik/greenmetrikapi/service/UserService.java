@@ -61,7 +61,7 @@ public class UserService {
         newUser.setTemporaryPassword(true);
 
         User savedUser = userRepository.save(newUser);
-        activityLogService.logActivity("USER_CREATED", "New user registered: " + savedUser.getUsername(), savedUser);
+        activityLogService.logActivity("CREATED", "USER", "New user registered: " + savedUser.getUsername(), savedUser);
 
         return UserResponse.fromEntity(savedUser);
     }
@@ -116,7 +116,7 @@ public class UserService {
         userToUpdate.setUnit(unit);
 
         User updatedUser = userRepository.save(userToUpdate);
-        activityLogService.logActivity("USER_UPDATED", "Admin updated details for user: " + updatedUser.getUsername(), updatedUser);
+        activityLogService.logActivity("UPDATED", "USER", "Admin updated details for user: " + updatedUser.getUsername(), updatedUser);
 
         return UserResponse.fromEntity(updatedUser);
     }
@@ -139,7 +139,7 @@ public class UserService {
         userRepository.save(userToReset);
 
         activityLogService.logActivity(
-            "USER_PASSWORD_RESET",
+            "RESET_PASSWORD", "USER",
             "Admin '" + adminUser.getUsername() + "' reset password for user '" + userToReset.getUsername() + "'",
             adminUser
         );
@@ -177,7 +177,7 @@ public class UserService {
         userRepository.save(userToDeactivate);
 
         activityLogService.logActivity(
-            "USER_DELETED",
+            "DELETED", "USER",
             "Admin '" + adminUser.getUsername() + "' deactivated user '" + userToDeactivate.getUsername() + "'",
             adminUser
         );

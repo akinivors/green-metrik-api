@@ -57,7 +57,7 @@ public class ConsumptionService {
         electricityRepository.save(consumption);
 
         // Log the electricity consumption creation activity
-        activityLogService.logActivity("ELECTRICITY_LOG_CREATED", "Electricity consumption log created for unit: " + unit.getName(), user);
+        activityLogService.logActivity("CREATED", "ELECTRICITY_CONSUMPTION", "Electricity consumption log created for unit: " + unit.getName(), user);
     }
 
     public void addWaterConsumption(WaterConsumptionRequest request, String username) {
@@ -78,7 +78,7 @@ public class ConsumptionService {
         waterRepository.save(consumption);
 
         // Log the water consumption creation activity
-        activityLogService.logActivity("WATER_LOG_CREATED", "Water consumption log created for unit: " + unit.getName(), user);
+        activityLogService.logActivity("CREATED", "WATER_CONSUMPTION", "Water consumption log created for unit: " + unit.getName(), user);
     }
 
     public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
@@ -126,7 +126,7 @@ public class ConsumptionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Electricity consumption entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted an electricity log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
-        activityLogService.logActivity("ELECTRICITY_LOG_DELETED", description, user);
+        activityLogService.logActivity("DELETED", "ELECTRICITY_CONSUMPTION", description, user);
 
         electricityRepository.deleteById(id);
     }
@@ -138,7 +138,7 @@ public class ConsumptionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Water consumption entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted a water log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
-        activityLogService.logActivity("WATER_LOG_DELETED", description, user);
+        activityLogService.logActivity("DELETED", "WATER_CONSUMPTION", description, user);
 
         waterRepository.deleteById(id);
     }

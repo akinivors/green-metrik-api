@@ -50,7 +50,7 @@ public class WasteDataService {
         wasteDataRepository.save(wasteData);
 
         // Log the waste data creation activity
-        activityLogService.logActivity("WASTE_DATA_CREATED", "Waste data created for date: " + request.dataDate(), user);
+        activityLogService.logActivity("CREATED", "WASTE_DATA", "Waste data created for date: " + request.dataDate(), user);
     }
 
     public Page<WasteDataResponse> getAllWasteData(Pageable pageable, LocalDate startDate, LocalDate endDate) {
@@ -77,7 +77,7 @@ public class WasteDataService {
                 .orElseThrow(() -> new ResourceNotFoundException("Waste data entry not found with id: " + id));
 
         String description = "User '" + currentUsername + "' deleted a waste data entry for date: " + entryToDelete.getDataDate();
-        activityLogService.logActivity("WASTE_DATA_DELETED", description, user);
+        activityLogService.logActivity("DELETED", "WASTE_DATA", description, user);
 
         wasteDataRepository.deleteById(id);
     }

@@ -45,7 +45,7 @@ public class VehicleService {
         vehicleEntryRepository.save(vehicleEntry);
 
         // Log the vehicle entry creation activity
-        activityLogService.logActivity("VEHICLE_ENTRY_CREATED", "Vehicle entry created for date: " + request.entryDate(), user);
+        activityLogService.logActivity("CREATED", "VEHICLE_ENTRY", "Vehicle entry created for date: " + request.entryDate(), user);
     }
 
     public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable, LocalDate startDate, LocalDate endDate) {
@@ -76,7 +76,7 @@ public class VehicleService {
 
         // Log the deletion event BEFORE deleting
         String description = "User '" + currentUsername + "' deleted a vehicle entry for date: " + entryToDelete.getEntryDate();
-        activityLogService.logActivity("VEHICLE_ENTRY_DELETED", description, user);
+        activityLogService.logActivity("DELETED", "VEHICLE_ENTRY", description, user);
 
         // Proceed with the deletion
         vehicleEntryRepository.deleteById(id);
