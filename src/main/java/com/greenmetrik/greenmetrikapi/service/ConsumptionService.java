@@ -15,6 +15,7 @@ import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WaterConsumptionRepository;
 import com.greenmetrik.greenmetrikapi.specifications.ElectricityConsumptionSpecification;
 import com.greenmetrik.greenmetrikapi.specifications.WaterConsumptionSpecification;
+import com.greenmetrik.greenmetrikapi.util.RepositoryHelper; // Import the new helper
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,8 +45,7 @@ public class ConsumptionService {
     public void addElectricityConsumption(ElectricityConsumptionRequest request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
-        Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
+        Unit unit = RepositoryHelper.findOrThrow(unitRepository, request.unitId(), "Unit");
 
         ElectricityConsumption consumption = new ElectricityConsumption();
         consumption.setPeriodStartDate(request.periodStartDate());
@@ -56,15 +56,13 @@ public class ConsumptionService {
 
         electricityRepository.save(consumption);
 
-        // Log the electricity consumption creation activity
         activityLogService.logActivity("CREATED", "ELECTRICITY_CONSUMPTION", "Electricity consumption log created for unit: " + unit.getName(), user);
     }
 
     public void addWaterConsumption(WaterConsumptionRequest request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
-        Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.unitId()));
+        Unit unit = RepositoryHelper.findOrThrow(unitRepository, request.unitId(), "Unit");
 
         WaterConsumption consumption = new WaterConsumption();
         consumption.setPeriodStartDate(request.periodStartDate());
@@ -77,14 +75,12 @@ public class ConsumptionService {
 
         waterRepository.save(consumption);
 
-        // Log the water consumption creation activity
         activityLogService.logActivity("CREATED", "WATER_CONSUMPTION", "Water consumption log created for unit: " + unit.getName(), user);
     }
 
     public Page<ElectricityConsumptionResponse> getAllElectricityConsumption(
             Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
 
-        // NEW: Create a new Pageable with our desired sorting
         Pageable sortedPageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -103,7 +99,6 @@ public class ConsumptionService {
     public Page<WaterConsumptionResponse> getAllWaterConsumption(
             Pageable pageable, Long unitId, LocalDate startDate, LocalDate endDate) {
 
-        // NEW: Create a new Pageable with our desired sorting
         Pageable sortedPageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -122,8 +117,7 @@ public class ConsumptionService {
     public void deleteElectricityConsumption(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
-        ElectricityConsumption entryToDelete = electricityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Electricity consumption entry not found with id: " + id));
+        ElectricityConsumption entryToDelete = RepositoryHelper.findOrThrow(electricityRepository, id, "Electricity consumption entry");
 
         String description = "User '" + currentUsername + "' deleted an electricity log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
         activityLogService.logActivity("DELETED", "ELECTRICITY_CONSUMPTION", description, user);
@@ -134,8 +128,7 @@ public class ConsumptionService {
     public void deleteWaterConsumption(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
-        WaterConsumption entryToDelete = waterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Water consumption entry not found with id: " + id));
+        WaterConsumption entryToDelete = RepositoryHelper.findOrThrow(waterRepository, id, "Water consumption entry");
 
         String description = "User '" + currentUsername + "' deleted a water log for unit '" + entryToDelete.getUnit().getName() + "' (Period: " + entryToDelete.getPeriodStartDate() + " to " + entryToDelete.getPeriodEndDate() + ")";
         activityLogService.logActivity("DELETED", "WATER_CONSUMPTION", description, user);

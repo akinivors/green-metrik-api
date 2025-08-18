@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional; // Import Optional
 
 @Repository
 public interface ElectricityConsumptionRepository extends JpaRepository<ElectricityConsumption, Long>, JpaSpecificationExecutor<ElectricityConsumption> {
@@ -18,4 +19,10 @@ public interface ElectricityConsumptionRepository extends JpaRepository<Electric
 
     @Query("SELECT new com.greenmetrik.greenmetrikapi.dto.PublicStatsDTO$MonthlyConsumptionGraphPoint(TO_CHAR(DATE_TRUNC('month', e.periodEndDate), 'YYYY-MM'), SUM(e.consumptionKwh), 0.0) FROM ElectricityConsumption e WHERE e.periodEndDate >= :startDate AND e.periodEndDate <= :endDate GROUP BY DATE_TRUNC('month', e.periodEndDate) ORDER BY DATE_TRUNC('month', e.periodEndDate) ASC")
     List<PublicStatsDTO.MonthlyConsumptionGraphPoint> findMonthlyConsumptionBetweenDates(LocalDate startDate, LocalDate endDate);
+
+    // ADD THIS NEW METHOD
+    @Query("SELECT SUM(e.consumptionKwh) FROM ElectricityConsumption e")
+    Optional<Double> sumTotalConsumptionKwh();
+
+
 }

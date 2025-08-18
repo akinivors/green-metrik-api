@@ -28,6 +28,7 @@ public class CampusMetricsController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     public CampusMetricsResponse addMetric(@Valid @RequestBody CampusMetricsRequest request, Principal principal) {
+        // Pass the username to the service
         return campusMetricsService.addMetric(request, principal.getName());
     }
 
@@ -63,6 +64,7 @@ public class CampusMetricsController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteMetric(@PathVariable Long id, Principal principal) {
+        // Pass the username to the service
         campusMetricsService.deleteMetric(id, principal.getName());
     }
 }

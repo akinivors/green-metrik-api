@@ -8,6 +8,7 @@ import com.greenmetrik.greenmetrikapi.model.VehicleEntry;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.VehicleEntryRepository;
 import com.greenmetrik.greenmetrikapi.specifications.VehicleEntrySpecification;
+import com.greenmetrik.greenmetrikapi.util.RepositoryHelper; // Import the new helper
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,12 +45,10 @@ public class VehicleService {
 
         vehicleEntryRepository.save(vehicleEntry);
 
-        // Log the vehicle entry creation activity
         activityLogService.logActivity("CREATED", "VEHICLE_ENTRY", "Vehicle entry created for date: " + request.entryDate(), user);
     }
 
     public Page<VehicleEntryResponse> getAllVehicleEntries(Pageable pageable, LocalDate startDate, LocalDate endDate) {
-        // NEW: Create a new Pageable with our desired sorting
         Pageable sortedPageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -60,25 +59,19 @@ public class VehicleService {
                 .where(VehicleEntrySpecification.hasEntryDateAfter(startDate))
                 .and(VehicleEntrySpecification.hasEntryDateBefore(endDate));
 
-        // Use the new sortedPageable object in the repository call
         Page<VehicleEntry> entryPage = vehicleEntryRepository.findAll(spec, sortedPageable);
         return entryPage.map(VehicleEntryResponse::fromEntity);
     }
 
     public void deleteVehicleEntry(Long id, String currentUsername) {
-        // Find the user performing the action
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
 
-        // Find the entry to be deleted to get its details for logging
-        VehicleEntry entryToDelete = vehicleEntryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vehicle entry not found with id: " + id));
+        VehicleEntry entryToDelete = RepositoryHelper.findOrThrow(vehicleEntryRepository, id, "Vehicle entry");
 
-        // Log the deletion event BEFORE deleting
         String description = "User '" + currentUsername + "' deleted a vehicle entry for date: " + entryToDelete.getEntryDate();
         activityLogService.logActivity("DELETED", "VEHICLE_ENTRY", description, user);
 
-        // Proceed with the deletion
         vehicleEntryRepository.deleteById(id);
     }
 }

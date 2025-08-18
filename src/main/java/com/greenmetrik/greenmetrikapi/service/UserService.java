@@ -12,6 +12,7 @@ import com.greenmetrik.greenmetrikapi.model.Unit;
 import com.greenmetrik.greenmetrikapi.model.User;
 import com.greenmetrik.greenmetrikapi.repository.UnitRepository;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
+import com.greenmetrik.greenmetrikapi.util.RepositoryHelper; // Import the new helper
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,10 +47,7 @@ public class UserService {
         }
         validatePassword(request.password());
 
-        Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                    "Unit not found", "Unit", request.unitId()
-                ));
+        Unit unit = RepositoryHelper.findOrThrow(unitRepository, request.unitId(), "Unit");
 
         User newUser = new User();
         newUser.setUsername(request.username());
@@ -67,7 +64,6 @@ public class UserService {
     }
 
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        // Create a sorted pageable to ensure consistent ordering (newest users first)
         Pageable sortedPageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -99,17 +95,13 @@ public class UserService {
     }
 
     public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
+        User user = RepositoryHelper.findOrThrow(userRepository, id, "User");
         return UserResponse.fromEntity(user);
     }
 
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
-        User userToUpdate = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found", "User", id));
-
-        Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found", "Unit", request.unitId()));
+        User userToUpdate = RepositoryHelper.findOrThrow(userRepository, id, "User");
+        Unit unit = RepositoryHelper.findOrThrow(unitRepository, request.unitId(), "Unit");
 
         userToUpdate.setFullName(request.fullName());
         userToUpdate.setRole(Role.valueOf(request.role().toUpperCase()));
@@ -125,8 +117,7 @@ public class UserService {
         User adminUser = userRepository.findByUsername(adminUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin user not found", "User", adminUsername));
 
-        User userToReset = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User to reset not found", "User", id));
+        User userToReset = RepositoryHelper.findOrThrow(userRepository, id, "User");
 
         if (userToReset.getUsername().equals(adminUsername)) {
             throw new InvalidRequestException("Admins cannot reset their own password via this method.");
@@ -166,8 +157,7 @@ public class UserService {
         User adminUser = userRepository.findActiveByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Performing admin user not found", "User", currentUsername));
 
-        User userToDeactivate = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User to delete not found", "User", id));
+        User userToDeactivate = RepositoryHelper.findOrThrow(userRepository, id, "User");
 
         if (userToDeactivate.getUsername().equals(currentUsername)) {
             throw new InvalidRequestException("Admin users cannot delete their own accounts.");

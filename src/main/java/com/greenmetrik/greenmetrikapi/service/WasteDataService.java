@@ -8,6 +8,7 @@ import com.greenmetrik.greenmetrikapi.model.WasteData;
 import com.greenmetrik.greenmetrikapi.repository.UserRepository;
 import com.greenmetrik.greenmetrikapi.repository.WasteDataRepository;
 import com.greenmetrik.greenmetrikapi.specifications.WasteDataSpecification;
+import com.greenmetrik.greenmetrikapi.util.RepositoryHelper; // Import the new helper
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,12 +50,10 @@ public class WasteDataService {
 
         wasteDataRepository.save(wasteData);
 
-        // Log the waste data creation activity
         activityLogService.logActivity("CREATED", "WASTE_DATA", "Waste data created for date: " + request.dataDate(), user);
     }
 
     public Page<WasteDataResponse> getAllWasteData(Pageable pageable, LocalDate startDate, LocalDate endDate) {
-        // NEW: Create a new Pageable with our desired sorting
         Pageable sortedPageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -65,7 +64,6 @@ public class WasteDataService {
                 .where(WasteDataSpecification.hasDataDateAfter(startDate))
                 .and(WasteDataSpecification.hasDataDateBefore(endDate));
 
-        // Use the new sortedPageable object in the repository call
         Page<WasteData> dataPage = wasteDataRepository.findAll(spec, sortedPageable);
         return dataPage.map(WasteDataResponse::fromEntity);
     }
@@ -73,8 +71,7 @@ public class WasteDataService {
     public void deleteWasteData(Long id, String currentUsername) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + currentUsername));
-        WasteData entryToDelete = wasteDataRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Waste data entry not found with id: " + id));
+        WasteData entryToDelete = RepositoryHelper.findOrThrow(wasteDataRepository, id, "Waste data entry");
 
         String description = "User '" + currentUsername + "' deleted a waste data entry for date: " + entryToDelete.getDataDate();
         activityLogService.logActivity("DELETED", "WASTE_DATA", description, user);

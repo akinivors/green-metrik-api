@@ -157,9 +157,8 @@ public class GreenMetricService {
     }
 
     private double getTotalElectricityConsumption() {
-        return electricityRepository.findAll().stream()
-                .mapToDouble(ElectricityConsumption::getConsumptionKwh)
-                .sum();
+        // Use the efficient repository method and handle the case where no data exists
+        return electricityRepository.sumTotalConsumptionKwh().orElse(0.0);
     }
 
     // --- Using Coworker's More Robust Helper Methods ---
